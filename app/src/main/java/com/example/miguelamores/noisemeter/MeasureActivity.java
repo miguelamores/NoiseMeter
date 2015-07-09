@@ -1,6 +1,7 @@
 package com.example.miguelamores.noisemeter;
 
 import android.app.Activity;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.media.MediaRecorder;
 import android.os.Bundle;
@@ -29,8 +30,9 @@ public class MeasureActivity extends Activity {
     Handler handler = new Handler();
     Runnable runnable;
     private SpeedometerGauge speedometer;
-    double v=10;
-    double v1=100;
+    private double mEMA = 0.0;
+    static final private double EMA_FILTER = 0.6;
+    SQLiteDatabase sqLiteDatabase;
 
 
     @Override
@@ -50,13 +52,16 @@ public class MeasureActivity extends Activity {
                 powerDb = 0;
 
                 tex.setText(String.valueOf(powerDb));
-                //powerDb = (20 * Math.log10((double) mRecorder.getMaxAmplitude()/2));
 
-                powerDb = (20 * Math.log10(getAmplitude()/1));
+                //powerDb = (20 * Math.log10(getAmplitude()/1));
+                //powerDb = (20 * Math.log10(getAmplitude()/1));
+                double amp = getAmplitude();
+                //mEMA = EMA_FILTER * amp + (1.0 - EMA_FILTER) * mEMA;
+                mEMA = 5*EMA_FILTER * amp + (1.0 - EMA_FILTER) * mEMA;
 
                 //setGauge(powerDb);
-                speedometer.setSpeed(powerDb);
-                tex.setText(String.valueOf(String.format("%.2f",powerDb)));
+                speedometer.setSpeed(mEMA);
+                tex.setText(String.valueOf(String.format("%.2f",mEMA)));
 
                 handler.postDelayed(this, 300);
             }
@@ -71,9 +76,9 @@ public class MeasureActivity extends Activity {
         });
 
         // configure value range and ticks
-        speedometer.setMaxSpeed(120);
+        speedometer.setMaxSpeed(100);
         speedometer.setMajorTickStep(10);
-        speedometer.setMinorTicks(2);
+        speedometer.setMinorTicks(4);
         speedometer.setLabelTextSize(20);
 
         // Configure value range colors
@@ -144,19 +149,10 @@ public class MeasureActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    public String setGauge(double power){
-        speedometer.setLabelConverter(new SpeedometerGauge.LabelConverter() {
-            @Override
-            public String getLabelFor(double power, double v1) {
-                return String.valueOf((int) Math.round(power));
-            }
-        });
-        return null;
-    }
 
     public double getAmplitude() {
         if (mRecorder != null)
-            return (mRecorder.getMaxAmplitude()+1);
+            return (mRecorder.getMaxAmplitude()/2700.0);
         else
             return 0;
 
