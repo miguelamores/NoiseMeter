@@ -1,7 +1,10 @@
 package com.example.miguelamores.noisemeter;
 
 import android.app.Activity;
+import android.content.ContentValues;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Color;
 import android.media.MediaRecorder;
 import android.os.Bundle;
@@ -13,10 +16,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.util.Date;
+
 import android.os.Handler;
 import android.widget.Toast;
 
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
+import com.example.miguelamores.data.SQLHelper;
 
 
 public class MeasureActivity extends Activity {
@@ -25,7 +31,7 @@ public class MeasureActivity extends Activity {
     double powerDb = 0;
 
     TextView tex;
-    Button btnPlay, btnParar;
+    Button btnPlay, btnParar, btnMap, btnSave;
     GPSTracker gps;
     Handler handler = new Handler();
     Runnable runnable;
@@ -33,6 +39,9 @@ public class MeasureActivity extends Activity {
     private double mEMA = 0.0;
     static final private double EMA_FILTER = 0.6;
     SQLiteDatabase sqLiteDatabase;
+    double latitude;
+    double longitude;
+
 
 
     @Override
@@ -44,7 +53,12 @@ public class MeasureActivity extends Activity {
         tex = (TextView)findViewById(R.id.textView);
         btnPlay = (Button)findViewById(R.id.btnPlay);
         btnParar = (Button)findViewById(R.id.btnParar);
+        btnMap = (Button)findViewById(R.id.mapButton);
+        btnSave = (Button)findViewById(R.id.saveButton);
         speedometer = (SpeedometerGauge) findViewById(R.id.speedometer);
+
+        final SQLHelper sqlHelper = new SQLHelper(this);
+        sqLiteDatabase = sqlHelper.getWritableDatabase();
 
         runnable = new Runnable() {
             @Override
@@ -94,8 +108,8 @@ public class MeasureActivity extends Activity {
                 gps = new GPSTracker(getApplicationContext());
 
                 if (gps.canGetLocation()) {
-                    double latitude = gps.getLatitude();
-                    double longitude = gps.getLongitude();
+                    latitude = gps.getLatitude();
+                    longitude = gps.getLongitude();
 
                     Toast.makeText(
                             getApplicationContext(),
@@ -121,6 +135,29 @@ public class MeasureActivity extends Activity {
             @Override
             public void onClick(View v) {
                 stop();
+            }
+        });
+
+        btnSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                ContentValues contentValues = new ContentValues();
+                contentValues.put("valor_db", mEMA);
+                contentValues.put("latitud", latitude);
+                contentValues.put("longitud", longitude);
+                contentValues.put("hora", String.valueOf(new Date()));
+                contentValues.put("usuario_id", 1);
+                sqLiteDatabase.insert("medicion", null, contentValues);
+                Toast.makeText(MeasureActivity.this, "Medicion guardada", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        btnMap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MeasureActivity.this, MapsActivity.class);
+                startActivity(intent);
             }
         });
 

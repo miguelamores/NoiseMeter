@@ -25,7 +25,7 @@ public class SQLHelper extends SQLiteOpenHelper {
     final private static String HORA = "hora";
     final private static String USUARIOID = "usuario_id";
 
-    final private static String TABLA_USUARIO = "CREATE TABLE usuario(" +
+    public static String TABLA_USUARIO = "CREATE TABLE usuario(" +
             _ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
             NOMBRE_USUARIO + " text, " +
             APELLIDO_USUARIO + " text, " +
@@ -37,7 +37,7 @@ public class SQLHelper extends SQLiteOpenHelper {
             VALORDB + " double, " +
             LATITUD + " double, " +
             LONGITUD + " double," +
-            HORA + " Date," + USUARIOID + " integer, FOREIGN KEY(" + USUARIOID + ") REFERENCES" + TABLA_USUARIO + "(" + _ID + "))";
+            HORA + " Date," + USUARIOID + " integer, FOREIGN KEY(" + USUARIOID + ") REFERENCES usuario(" + _ID + "))";
 
     public SQLHelper(Context context) {
         super(context, DBName, null, DBVersion);
