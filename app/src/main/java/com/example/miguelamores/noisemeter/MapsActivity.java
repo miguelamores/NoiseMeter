@@ -84,14 +84,14 @@ public class MapsActivity extends FragmentActivity {
                 medicion.setLatitud(cursor.getDouble(1));
                 medicion.setLongitud(cursor.getDouble(2));
                 medicions.add(0, medicion);
-                mMap.addMarker(new MarkerOptions().position(new LatLng(medicion.getLatitud(), medicion.getLongitud())).title(String.valueOf(medicion.getValor_db())));
+                mMap.addMarker(new MarkerOptions().position(new LatLng(medicion.getLatitud(), medicion.getLongitud())).title(String.valueOf(medicion.getValor_db())+" dB"));
             }
             while (cursor.moveToNext());
         }
 
 
-        mMap.addMarker(new MarkerOptions().position(new LatLng(-0.9415252, -78.6110042)).title("80 Decibels"));
-        mMap.addMarker(new MarkerOptions().position(new LatLng(-0.1695956, -78.4712558)).title("50 Decibels"));
+        //mMap.addMarker(new MarkerOptions().position(new LatLng(-0.9415252, -78.6110042)).title("80 Decibels"));
+        //mMap.addMarker(new MarkerOptions().position(new LatLng(-0.1695956, -78.4712558)).title("50 Decibels"));
 
     }
 }

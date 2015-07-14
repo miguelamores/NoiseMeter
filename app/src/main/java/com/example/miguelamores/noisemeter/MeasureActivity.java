@@ -68,24 +68,24 @@ public class MeasureActivity extends Activity {
                 tex.setText(String.valueOf(powerDb));
 
                 //powerDb = (20 * Math.log10(getAmplitude()/1));
-                //powerDb = (20 * Math.log10(getAmplitude()/1));
+                //powerDb = (20 * Math.log10(getAmplitude()));
                 double amp = getAmplitude();
                 //mEMA = EMA_FILTER * amp + (1.0 - EMA_FILTER) * mEMA;
                 mEMA = 5*EMA_FILTER * amp + (1.0 - EMA_FILTER) * mEMA;
 
                 //setGauge(powerDb);
                 speedometer.setSpeed(mEMA);
-                tex.setText(String.valueOf(String.format("%.2f",mEMA)));
+                tex.setText(String.valueOf(String.format("%.2f",mEMA))+" dB");
 
-                handler.postDelayed(this, 300);
+                handler.postDelayed(this, 500);
             }
         };
 
         // Add label converter
         speedometer.setLabelConverter(new SpeedometerGauge.LabelConverter() {
             @Override
-            public String getLabelFor(double v, double v1) {
-                return String.valueOf((int) Math.round(v1));
+            public String getLabelFor(double progress, double maxProgress) {
+                return String.valueOf((int) Math.round(progress));
             }
         });
 
@@ -190,6 +190,7 @@ public class MeasureActivity extends Activity {
     public double getAmplitude() {
         if (mRecorder != null)
             return (mRecorder.getMaxAmplitude()/2700.0);
+        //return (mRecorder.getMaxAmplitude()/2700.0);
         else
             return 0;
 
