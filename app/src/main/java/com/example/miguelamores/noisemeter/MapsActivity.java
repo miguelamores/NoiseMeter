@@ -7,6 +7,7 @@ import android.os.Bundle;
 
 import com.example.miguelamores.data.Medicion;
 import com.example.miguelamores.data.SQLHelper;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
@@ -26,6 +27,7 @@ public class MapsActivity extends FragmentActivity {
         setContentView(R.layout.activity_maps);
 
         setUpMapIfNeeded();
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-0.180653, -78.467834), 6));
     }
 
     @Override
@@ -73,6 +75,7 @@ public class MapsActivity extends FragmentActivity {
         final SQLHelper sqlHelper = new SQLHelper(this);
         sqLiteDatabase = sqlHelper.getWritableDatabase();
         Cursor cursor;
+
         //cursor = sqLiteDatabase.query("medicion",null,null,null,null,null,null);
         cursor = sqLiteDatabase.query("medicion", new String[]{"valor_db", "latitud", "longitud"}, null, null, null, null, null);
 

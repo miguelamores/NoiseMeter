@@ -76,6 +76,7 @@ public class MeasureActivity extends Activity {
                 //setGauge(powerDb);
                 speedometer.setSpeed(mEMA);
                 tex.setText(String.valueOf(String.format("%.2f",mEMA))+" dB");
+                //tex.setText(String.valueOf(powerDb)+" dB");
 
                 handler.postDelayed(this, 500);
             }
