@@ -24,8 +24,10 @@ import android.widget.Toast;
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
 import com.example.miguelamores.data.SQLHelper;
 
+import measureRest.MeasureGet;
 
-public class MeasureActivity extends Activity {
+
+public class MeasureActivity extends Activity{
 
     private MediaRecorder mRecorder = null;
     double powerDb = 0;
@@ -42,6 +44,7 @@ public class MeasureActivity extends Activity {
     double latitude;
     double longitude;
 
+    private MeasureGet measureGet;
 
 
     @Override
@@ -56,6 +59,14 @@ public class MeasureActivity extends Activity {
         btnMap = (Button)findViewById(R.id.mapButton);
         btnSave = (Button)findViewById(R.id.saveButton);
         speedometer = (SpeedometerGauge) findViewById(R.id.speedometer);
+
+        measureGet = new MeasureGet(new AsyncResponse() {
+            @Override
+            public void processFinish(String output) {
+                Toast.makeText(getApplicationContext(),output,Toast.LENGTH_LONG).show();
+            }
+        });
+        measureGet.execute("http://192.168.1.5:3000/measure");
 
         final SQLHelper sqlHelper = new SQLHelper(this);
         sqLiteDatabase = sqlHelper.getWritableDatabase();
@@ -222,4 +233,8 @@ public class MeasureActivity extends Activity {
         }
     }
 
+    /*@Override
+    public void processFinish(String output) {
+        Toast.makeText(getApplicationContext(),output,Toast.LENGTH_LONG).show();
+    }*/
 }
