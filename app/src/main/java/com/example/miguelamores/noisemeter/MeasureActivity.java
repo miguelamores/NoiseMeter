@@ -7,7 +7,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Color;
 import android.media.MediaRecorder;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,14 +17,32 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import android.os.Handler;
 import android.widget.Toast;
 
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
+import com.example.miguelamores.data.Medicion;
 import com.example.miguelamores.data.SQLHelper;
+import com.google.android.gms.plus.model.people.Person;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONObject;
 
 import measureRest.MeasureGet;
 
@@ -154,6 +174,8 @@ public class MeasureActivity extends Activity{
             @Override
             public void onClick(View view) {
 
+                new HttpAsyncTask().execute("http://192.168.1.5:3000/measure");
+
                 ContentValues contentValues = new ContentValues();
                 contentValues.put("valor_db", mEMA);
                 contentValues.put("latitud", latitude);
@@ -233,8 +255,96 @@ public class MeasureActivity extends Activity{
         }
     }
 
-    /*@Override
-    public void processFinish(String output) {
-        Toast.makeText(getApplicationContext(),output,Toast.LENGTH_LONG).show();
-    }*/
+
+    public static String POST(String url, Medicion medicion){
+        InputStream inputStream = null;
+        String result = "";
+        try {
+
+            // 1. create HttpClient
+            HttpClient httpclient = new DefaultHttpClient();
+
+            // 2. make POST request to the given URL
+            HttpPost httpPost = new HttpPost(url);
+
+            String json = "";
+
+            // 3. build jsonObject
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.accumulate("id", 5);
+            jsonObject.accumulate("valor", medicion.getValor_db());
+            jsonObject.accumulate("latitude", medicion.getLatitud());
+            jsonObject.accumulate("logitude", medicion.getLongitud());
+            jsonObject.accumulate("created_at", new Date());
+            jsonObject.accumulate("updated_at", new Date());
+
+            // 4. convert JSONObject to JSON to String
+            json = jsonObject.toString();
+
+            // ** Alternative way to convert Person object to JSON string usin Jackson Lib
+            // ObjectMapper mapper = new ObjectMapper();
+            // json = mapper.writeValueAsString(person);
+
+            // 5. set json to StringEntity
+            StringEntity se = new StringEntity(json);
+
+            // 6. set httpPost Entity
+            httpPost.setEntity(se);
+
+            // 7. Set some headers to inform server about the type of the content
+            httpPost.setHeader("Accept", "application/json");
+            httpPost.setHeader("Content-type", "application/json");
+
+            // 8. Execute POST request to the given URL
+            HttpResponse httpResponse = httpclient.execute(httpPost);
+
+            // 9. receive response as inputStream
+            inputStream = httpResponse.getEntity().getContent();
+
+            // 10. convert inputstream to string
+            if(inputStream != null)
+                result = convertInputStreamToString(inputStream);
+            else
+                result = "Did not work!";
+
+        } catch (Exception e) {
+            Log.d("InputStream", e.getLocalizedMessage());
+        }
+
+        // 11. return result
+        return result;
+    }
+
+    private static String convertInputStreamToString(InputStream inputStream) throws IOException{
+        BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
+        String line = "";
+        String result = "";
+        while((line = bufferedReader.readLine()) != null)
+            result += line;
+
+        inputStream.close();
+        return result;
+
+    }
+
+    private class HttpAsyncTask extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... urls) {
+
+            Medicion medicion = new Medicion();
+            medicion.setMedicion_id(3);
+            medicion.setValor_db(50);
+            medicion.setLongitud(longitude);
+            medicion.setLatitud(latitude);
+
+            return POST(urls[0],medicion);
+        }
+        // onPostExecute displays the results of the AsyncTask.
+        @Override
+        protected void onPostExecute(String result) {
+            Toast.makeText(getBaseContext(), "Data Sent!", Toast.LENGTH_LONG).show();
+        }
+    }
+
+
 }

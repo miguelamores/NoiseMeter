@@ -21,10 +21,10 @@ import java.net.URL;
  */
 public class MeasureGet extends AsyncTask<String, String, String> {
 
-    public AsyncResponse delegate=null;
+    public AsyncResponse asyncResponseGet=null;
 
-    public MeasureGet(AsyncResponse delegate){
-        this.delegate = delegate;
+    public MeasureGet(AsyncResponse asyncResponseGet){
+        this.asyncResponseGet = asyncResponseGet;
     }
 
     @Override
@@ -52,7 +52,7 @@ public class MeasureGet extends AsyncTask<String, String, String> {
     protected void onPostExecute(String result) {
         //EditText dynCount = (EditText)findViewById(R.id.dynamicCountEdit);
         //dynCount.setText(result + " records were found");
-        delegate.processFinish(result);
+        asyncResponseGet.processFinish(result);
         Log.i("FromOnPostExecute", result);
         System.out.println(result);
     }
