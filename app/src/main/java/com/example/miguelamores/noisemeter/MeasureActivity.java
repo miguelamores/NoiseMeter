@@ -106,7 +106,7 @@ public class MeasureActivity extends Activity{
 
                 //setGauge(powerDb);
                 speedometer.setSpeed(mEMA);
-                tex.setText(String.valueOf(String.format("%.2f",mEMA))+" dB");
+                tex.setText(String.valueOf(String.format("%.2f",mEMA)));
                 //tex.setText(String.valueOf(powerDb)+" dB");
 
                 handler.postDelayed(this, 500);
@@ -271,12 +271,12 @@ public class MeasureActivity extends Activity{
 
             // 3. build jsonObject
             JSONObject jsonObject = new JSONObject();
-            jsonObject.accumulate("id", 5);
+            //jsonObject.accumulate("id", medicion.getMedicion_id());
             jsonObject.accumulate("valor", medicion.getValor_db());
             jsonObject.accumulate("latitude", medicion.getLatitud());
             jsonObject.accumulate("logitude", medicion.getLongitud());
-            jsonObject.accumulate("created_at", new Date());
-            jsonObject.accumulate("updated_at", new Date());
+            //jsonObject.accumulate("created_at", new Date());
+            //jsonObject.accumulate("updated_at", new Date());
 
             // 4. convert JSONObject to JSON to String
             json = jsonObject.toString();
@@ -328,12 +328,23 @@ public class MeasureActivity extends Activity{
     }
 
     private class HttpAsyncTask extends AsyncTask<String, Void, String> {
+
+
+
         @Override
         protected String doInBackground(String... urls) {
 
+//            double value;
+//
+//            try {
+//                value = new Double(tex.getText().toString());
+//            } catch (NumberFormatException e) {
+//                value = 0; // your default value
+//            }
+
             Medicion medicion = new Medicion();
-            medicion.setMedicion_id(3);
-            medicion.setValor_db(50);
+            //medicion.setMedicion_id(6);
+            medicion.setValor_db(mEMA);
             medicion.setLongitud(longitude);
             medicion.setLatitud(latitude);
 
