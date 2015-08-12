@@ -6,6 +6,7 @@
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MeasureActivity"
     android:orientation="vertical">
 
+
     <com.cardiomood.android.controls.gauge.SpeedometerGauge
         android:layout_height="wrap_content"
         android:layout_width="match_parent"

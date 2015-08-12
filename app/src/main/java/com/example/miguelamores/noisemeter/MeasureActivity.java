@@ -272,9 +272,9 @@ public class MeasureActivity extends Activity{
             // 3. build jsonObject
             JSONObject jsonObject = new JSONObject();
             //jsonObject.accumulate("id", medicion.getMedicion_id());
-            jsonObject.accumulate("valor", medicion.getValor_db());
+            jsonObject.accumulate("value", medicion.getValor_db());
             jsonObject.accumulate("latitude", medicion.getLatitud());
-            jsonObject.accumulate("logitude", medicion.getLongitud());
+            jsonObject.accumulate("longitude", medicion.getLongitud());
             //jsonObject.accumulate("created_at", new Date());
             //jsonObject.accumulate("updated_at", new Date());
 
@@ -343,7 +343,7 @@ public class MeasureActivity extends Activity{
 //            }
 
             Medicion medicion = new Medicion();
-            //medicion.setMedicion_id(6);
+            
             medicion.setValor_db(mEMA);
             medicion.setLongitud(longitude);
             medicion.setLatitud(latitude);
