@@ -1,39 +1,40 @@
 package com.example.miguelamores.noisemeter;
 
 import android.app.Activity;
-import android.content.Intent;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
+import android.widget.TabHost;
 
+public class SignActivity extends Activity {
 
-public class LoginActivity extends Activity {
-
-    private Button btnIngresar;
+    private TabHost tabHost;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_sign);
 
-        btnIngresar = (Button) findViewById(R.id.ingresarButton);
+        tabHost = (TabHost) findViewById(R.id.tabHost);
 
-        btnIngresar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, MeasureActivity.class);
-                startActivity(intent);
-            }
-        });
+        tabHost.setup();
+        TabHost.TabSpec tabSpec1 = tabHost.newTabSpec("tab1");
+        tabSpec1.setIndicator("Measure");
+        tabSpec1.setContent(R.id.tab1);
+        tabHost.addTab(tabSpec1);
 
+        tabHost.setup();
+        TabHost.TabSpec tabSpec2 = tabHost.newTabSpec("tab2");
+        tabSpec2.setIndicator("Configuration");
+        tabSpec2.setContent(R.id.tab2);
+        tabHost.addTab(tabSpec2);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_login, menu);
+        getMenuInflater().inflate(R.menu.menu_sign, menu);
         return true;
     }
 

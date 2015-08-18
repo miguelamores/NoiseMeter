@@ -4,26 +4,23 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Color;
 import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.widget.SlidingPaneLayout;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import android.os.Handler;
 import android.widget.Toast;
@@ -31,17 +28,12 @@ import android.widget.Toast;
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
 import com.example.miguelamores.data.Medicion;
 import com.example.miguelamores.data.SQLHelper;
-import com.google.android.gms.plus.model.people.Person;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
 
 import measureRest.MeasureGet;
@@ -66,6 +58,8 @@ public class MeasureActivity extends Activity{
 
     private MeasureGet measureGet;
 
+    SlidingPaneLayout slidingPaneLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,11 +74,18 @@ public class MeasureActivity extends Activity{
         btnSave = (Button)findViewById(R.id.saveButton);
         speedometer = (SpeedometerGauge) findViewById(R.id.speedometer);
 
-        measureGet = new MeasureGet(new AsyncResponse() {
+        String name = getIntent().getStringExtra("name");
+        String mail = getIntent().getStringExtra("mail");
+        String id = getIntent().getStringExtra("id");
+        //tex.setText("Bienvenido " + name);
+
+
+        measureGet = new MeasureGet(new AsyncResponseMeasure() {
             @Override
-            public void processFinish(String output) {
-                Toast.makeText(getApplicationContext(),output,Toast.LENGTH_LONG).show();
+            public void getMeasureRest(String output) {
+                //Toast.makeText(getApplicationContext(),output,Toast.LENGTH_LONG).show();
             }
+
         });
         measureGet.execute("http://192.168.1.5:3000/measure");
 
@@ -271,12 +272,10 @@ public class MeasureActivity extends Activity{
 
             // 3. build jsonObject
             JSONObject jsonObject = new JSONObject();
-            //jsonObject.accumulate("id", medicion.getMedicion_id());
             jsonObject.accumulate("value", medicion.getValor_db());
             jsonObject.accumulate("latitude", medicion.getLatitud());
             jsonObject.accumulate("longitude", medicion.getLongitud());
-            //jsonObject.accumulate("created_at", new Date());
-            //jsonObject.accumulate("updated_at", new Date());
+
 
             // 4. convert JSONObject to JSON to String
             json = jsonObject.toString();
@@ -343,7 +342,7 @@ public class MeasureActivity extends Activity{
 //            }
 
             Medicion medicion = new Medicion();
-            
+
             medicion.setValor_db(mEMA);
             medicion.setLongitud(longitude);
             medicion.setLatitud(latitude);
@@ -353,7 +352,7 @@ public class MeasureActivity extends Activity{
         // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
-            Toast.makeText(getBaseContext(), "Data Sent!", Toast.LENGTH_LONG).show();
+            Toast.makeText(getBaseContext(), "Data Sent!: " + result, Toast.LENGTH_LONG).show();
         }
     }
 
