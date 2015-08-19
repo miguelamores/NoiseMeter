@@ -14,7 +14,7 @@ public class SQLHelper extends SQLiteOpenHelper {
 
     final private static String _ID = "_id";
     final private static String NOMBRE_USUARIO = "nombre";
-    final private static String APELLIDO_USUARIO = "apellido";
+    final private static String SESSION = "session";
     final private static String EMAIL = "email";
     final private static String CONTRASENA = "contrasena";
 
@@ -26,9 +26,9 @@ public class SQLHelper extends SQLiteOpenHelper {
     final private static String USUARIOID = "usuario_id";
 
     public static String TABLA_USUARIO = "CREATE TABLE usuario(" +
-            _ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+            _ID + " INTEGER PRIMARY KEY," +
             NOMBRE_USUARIO + " text, " +
-            APELLIDO_USUARIO + " text, " +
+            SESSION + " boolean, " +
             EMAIL + " text," +
             CONTRASENA + " text)";
 

@@ -77,7 +77,7 @@ public class MeasureActivity extends Activity{
         String name = getIntent().getStringExtra("name");
         String mail = getIntent().getStringExtra("mail");
         String id = getIntent().getStringExtra("id");
-        //tex.setText("Bienvenido " + name);
+        tex.setText("Bienvenido " + name);
 
 
         measureGet = new MeasureGet(new AsyncResponseMeasure() {

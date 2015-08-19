@@ -91,10 +91,7 @@ public class MapsActivity extends FragmentActivity {
             }
             while (cursor.moveToNext());
         }
-
-
-        //mMap.addMarker(new MarkerOptions().position(new LatLng(-0.9415252, -78.6110042)).title("80 Decibels"));
-        //mMap.addMarker(new MarkerOptions().position(new LatLng(-0.1695956, -78.4712558)).title("50 Decibels"));
+        cursor.close();
 
     }
 }
