@@ -12,6 +12,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.heatmaps.HeatmapTileProvider;
 
 import java.util.ArrayList;
 
@@ -21,6 +22,7 @@ public class MapsActivity extends FragmentActivity {
     SQLiteDatabase sqLiteDatabase;
     Medicion medicion;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,6 +30,7 @@ public class MapsActivity extends FragmentActivity {
 
         setUpMapIfNeeded();
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-0.180653, -78.467834), 6));
+        mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
     }
 
     @Override

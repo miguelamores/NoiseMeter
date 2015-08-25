@@ -1,6 +1,7 @@
 package com.example.miguelamores.noisemeter;
 
 import android.app.Activity;
+import android.app.IntentService;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -66,8 +67,7 @@ public class LoginActivity extends Activity {
         sqLiteDatabase = sqlHelper.getWritableDatabase();
         Cursor cursor;
 
-        cursor = sqLiteDatabase.query("usuario", new String[]{"session", "_id", "nombre"}, null, null, null, null, null);
-
+        cursor = sqLiteDatabase.query("usuario", new String[]{"session", "_id", "nombre", "email"}, null, null, null, null, null);
 
         if (cursor.moveToFirst()) {
             do {
@@ -77,8 +77,10 @@ public class LoginActivity extends Activity {
                     Intent intent = new Intent(LoginActivity.this, MeasureActivity.class);
                     intent.putExtra("id", cursor.getInt(1));
                     intent.putExtra("name", cursor.getString(2));
+                    intent.putExtra("mail", cursor.getString(3));
                     startActivity(intent);
-                    System.out.println("Encontrado BOOLEAN");
+                    finish();
+                    System.out.println("Encontrado BOOLEAN "+ cursor.getInt(1));
                     break;
                 }
 
@@ -128,6 +130,12 @@ public class LoginActivity extends Activity {
 
         btnIngresar = (Button) findViewById(R.id.loginButton);
 
+//        if (email.getText().toString().equals("") && password.getText().toString().equals("")){
+//            btnIngresar.setEnabled(false);
+//        }else {
+//            btnIngresar.setEnabled(true);
+//        }
+
         btnIngresar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -165,21 +173,23 @@ public class LoginActivity extends Activity {
                             if (cursor.moveToFirst()) {
                                 do {
                                     if (String.valueOf(cursor.getInt(0)).equals(id)){
+                                        //if (cursor.getInt(0) == Integer.valueOf(id)){
                                         ContentValues contentValues = new ContentValues();
                                         contentValues.put("session", true);
-                                        sqLiteDatabase.update("usuario", contentValues, "_id=" + id, null);
+                                        sqLiteDatabase.update("usuario", contentValues, "_id=" + Integer.valueOf(id), null);
                                         System.out.println("Encontrado");
                                         break;
                                     }
                                     else {
                                         ContentValues contentValues = new ContentValues();
-                                        contentValues.put("_id", Integer.parseInt(id));
+                                        contentValues.put("_id", Integer.valueOf(id));
                                         contentValues.put("nombre", userName);
                                         contentValues.put("email", sqliteEmail);
                                         contentValues.put("contrasena", sqlitePassword);
                                         contentValues.put("session", true);
                                         sqLiteDatabase.insert("usuario",null,contentValues);
                                         System.out.println("Guardado--------------");
+                                        break;
                                         //Toast.makeText(getApplicationContext(), "No existe", Toast.LENGTH_SHORT).show();
                                     }
 
@@ -187,7 +197,7 @@ public class LoginActivity extends Activity {
                                 while (cursor.moveToNext());
                             }else {
                                 ContentValues contentValues = new ContentValues();
-                                contentValues.put("_id", Integer.parseInt(id));
+                                contentValues.put("_id", Integer.valueOf(id));
                                 contentValues.put("nombre", userName);
                                 contentValues.put("email", sqliteEmail);
                                 contentValues.put("contrasena", sqlitePassword);
@@ -200,7 +210,7 @@ public class LoginActivity extends Activity {
 
 
                             Intent intent = new Intent(LoginActivity.this, MeasureActivity.class);
-                            intent.putExtra("id", id);
+                            intent.putExtra("id", Integer.valueOf(id));
                             intent.putExtra("mail", email.getText().toString());
                             intent.putExtra("name", userName);
                             startActivity(intent);

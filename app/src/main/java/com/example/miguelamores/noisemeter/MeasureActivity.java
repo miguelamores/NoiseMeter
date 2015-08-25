@@ -3,6 +3,7 @@ package com.example.miguelamores.noisemeter;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.media.MediaRecorder;
@@ -44,7 +45,7 @@ public class MeasureActivity extends Activity{
     private MediaRecorder mRecorder = null;
     double powerDb = 0;
 
-    TextView tex;
+    TextView tex, welcome;
     Button btnPlay, btnParar, btnMap, btnSave;
     GPSTracker gps;
     Handler handler = new Handler();
@@ -56,9 +57,12 @@ public class MeasureActivity extends Activity{
     double latitude;
     double longitude;
 
+    String name;
+    String mail;
+    int idUser;
+
     private MeasureGet measureGet;
 
-    SlidingPaneLayout slidingPaneLayout;
 
 
     @Override
@@ -72,12 +76,15 @@ public class MeasureActivity extends Activity{
         btnParar = (Button)findViewById(R.id.btnParar);
         btnMap = (Button)findViewById(R.id.mapButton);
         btnSave = (Button)findViewById(R.id.saveButton);
+        welcome = (TextView)findViewById(R.id.welcomeTextView);
         speedometer = (SpeedometerGauge) findViewById(R.id.speedometer);
 
-        String name = getIntent().getStringExtra("name");
-        String mail = getIntent().getStringExtra("mail");
-        String id = getIntent().getStringExtra("id");
-        tex.setText("Bienvenido " + name);
+        Bundle extras = getIntent().getExtras();
+        name = getIntent().getStringExtra("name");
+        mail = getIntent().getStringExtra("mail");
+        idUser = getIntent().getIntExtra("id", 0);
+        welcome.setText("Welcome " + name);
+        welcome.setTextColor(Color.WHITE);
 
 
         measureGet = new MeasureGet(new AsyncResponseMeasure() {
@@ -215,7 +222,20 @@ public class MeasureActivity extends Activity{
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            return true;
+
+            try {
+                System.out.println("Logout----" + mail);
+                ContentValues contentValues = new ContentValues();
+                contentValues.put("session", false);
+                sqLiteDatabase.update("usuario", contentValues, "email = ?", new String[]{mail});
+
+                Intent intent = new Intent(MeasureActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+                //sqLiteDatabase.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         return super.onOptionsItemSelected(item);
@@ -275,7 +295,7 @@ public class MeasureActivity extends Activity{
             jsonObject.accumulate("value", medicion.getValor_db());
             jsonObject.accumulate("latitude", medicion.getLatitud());
             jsonObject.accumulate("longitude", medicion.getLongitud());
-
+            jsonObject.accumulate("user_id", medicion.getUsuario_id());
 
             // 4. convert JSONObject to JSON to String
             json = jsonObject.toString();
@@ -346,6 +366,7 @@ public class MeasureActivity extends Activity{
             medicion.setValor_db(mEMA);
             medicion.setLongitud(longitude);
             medicion.setLatitud(latitude);
+            medicion.setUsuario_id(idUser);
 
             return POST(urls[0],medicion);
         }
