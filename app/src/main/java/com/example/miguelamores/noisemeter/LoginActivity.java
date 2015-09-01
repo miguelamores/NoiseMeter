@@ -27,6 +27,9 @@ import android.widget.Toast;
 import com.example.miguelamores.data.Medicion;
 import com.example.miguelamores.data.SQLHelper;
 import com.example.miguelamores.data.User;
+import com.gc.materialdesign.views.ButtonFlat;
+import com.gc.materialdesign.views.ButtonFloat;
+import com.gc.materialdesign.views.ProgressBarCircularIndeterminate;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -52,6 +55,7 @@ public class LoginActivity extends Activity {
     private Button btnIngresar, register;
     private TextView signIn, signUp;
     private EditText name, email, password;
+    private ProgressBarCircularIndeterminate progress;
 
     private UserGet userGet;
     String  statusCode, id, userName, sqliteEmail, sqlitePassword;
@@ -63,32 +67,36 @@ public class LoginActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+
         final SQLHelper sqlHelper = new SQLHelper(LoginActivity.this);
         sqLiteDatabase = sqlHelper.getWritableDatabase();
         Cursor cursor;
 
-        cursor = sqLiteDatabase.query("usuario", new String[]{"session", "_id", "nombre", "email"}, null, null, null, null, null);
+        try {
+            cursor = sqLiteDatabase.query("usuario", new String[]{"session", "_id", "nombre", "email"}, null, null, null, null, null);
 
-        if (cursor.moveToFirst()) {
-            do {
-                boolean sessionBool = cursor.getInt(0)>0;
-                if (sessionBool){
+            if (cursor.moveToFirst()) {
+                do {
+                    boolean sessionBool = cursor.getInt(0)>0;
+                    if (sessionBool){
 
-                    Intent intent = new Intent(LoginActivity.this, MeasureActivity.class);
-                    intent.putExtra("id", cursor.getInt(1));
-                    intent.putExtra("name", cursor.getString(2));
-                    intent.putExtra("mail", cursor.getString(3));
-                    startActivity(intent);
-                    finish();
-                    System.out.println("Encontrado BOOLEAN "+ cursor.getInt(1));
-                    break;
+                        Intent intent = new Intent(LoginActivity.this, MeasureActivity.class);
+                        intent.putExtra("id", cursor.getInt(1));
+                        intent.putExtra("name", cursor.getString(2));
+                        intent.putExtra("mail", cursor.getString(3));
+                        startActivity(intent);
+                        finish();
+                        System.out.println("Encontrado BOOLEAN "+ cursor.getInt(1));
+                        break;
+                    }
+
                 }
-
+                while (cursor.moveToNext());
             }
-            while (cursor.moveToNext());
+            cursor.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        cursor.close();
-
 
 
         if(!isConnected()){
@@ -102,57 +110,63 @@ public class LoginActivity extends Activity {
         email = (EditText) findViewById(R.id.emailEditText);
         password = (EditText) findViewById(R.id.passwordEditText);
         register = (Button) findViewById(R.id.registerButton);
+        progress = (ProgressBarCircularIndeterminate) findViewById(R.id.progressBarCircularIndeterminate);
+        progress.setVisibility(View.INVISIBLE);
 
         signUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //signUp.setTextColor(getResources().getColor(R.color.material_blue_grey_950));
+                name.setFocusable(true);
                 signUp.setTextColor(Color.WHITE);
                 signIn.setTextColor(Color.GRAY);
                 name.setVisibility(View.VISIBLE);
                 register.setVisibility(View.VISIBLE);
                 btnIngresar.setVisibility(View.INVISIBLE);
+                name.requestFocus();
             }
         });
 
         signIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //signIn.setTextColor(getResources().getColor(R.color.accent_material_dark));
                 signIn.setTextColor(Color.WHITE);
                 signUp.setTextColor(Color.GRAY);
                 name.setVisibility(View.INVISIBLE);
-                register.setVisibility(View.INVISIBLE);
                 register.setVisibility(View.INVISIBLE);
                 btnIngresar.setVisibility(View.VISIBLE);
             }
         });
 
         btnIngresar = (Button) findViewById(R.id.loginButton);
+        btnIngresar.setEnabled(true);
 
-//        if (email.getText().toString().equals("") && password.getText().toString().equals("")){
-//            btnIngresar.setEnabled(false);
-//        }else {
-//            btnIngresar.setEnabled(true);
-//        }
+
 
         btnIngresar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+
                 userGet = new UserGet(new AsyncResponseUser() {
                     @Override
                     public void getUserRest(String response) {
+
                         statusCode = response;
                         try {
+                            btnIngresar.setEnabled(false);
                             JSONObject jsonObject = new JSONObject(statusCode);
                             id = jsonObject.get("id").toString();
                             userName = jsonObject.get("name").toString();
                             sqliteEmail = jsonObject.getString("mail").toString();
                             sqlitePassword = jsonObject.getString("password").toString();
+                            progress.setVisibility(View.VISIBLE);
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            Toast.makeText(getBaseContext(), "Failure in login. Try again.", Toast.LENGTH_LONG).show();
+                            btnIngresar.setEnabled(true);
+                            progress.setEnabled(false);
                         }
+
                     }
                 });
                 userGet.execute("http://192.168.1.5:3000/user" + "?mail=" + email.getText().toString() + "&password=" + password.getText().toString());
@@ -168,59 +182,59 @@ public class LoginActivity extends Activity {
                         }else {
 
                             Cursor cursor;
-                            cursor = sqLiteDatabase.query("usuario", new String[]{"_id"}, null, null, null, null, null);
+                            //cursor = sqLiteDatabase.query("usuario", new String[]{"_id"}, null, null, null, null, null);
+                            cursor = sqLiteDatabase.query("usuario", new String[]{"_id"}, "_id=?", new String[]{id.toString()}, null, null, null);
+
 
                             if (cursor.moveToFirst()) {
                                 do {
-                                    if (String.valueOf(cursor.getInt(0)).equals(id)){
-                                        //if (cursor.getInt(0) == Integer.valueOf(id)){
-                                        ContentValues contentValues = new ContentValues();
-                                        contentValues.put("session", true);
-                                        sqLiteDatabase.update("usuario", contentValues, "_id=" + Integer.valueOf(id), null);
-                                        System.out.println("Encontrado");
-                                        break;
-                                    }
-                                    else {
-                                        ContentValues contentValues = new ContentValues();
-                                        contentValues.put("_id", Integer.valueOf(id));
-                                        contentValues.put("nombre", userName);
-                                        contentValues.put("email", sqliteEmail);
-                                        contentValues.put("contrasena", sqlitePassword);
-                                        contentValues.put("session", true);
-                                        sqLiteDatabase.insert("usuario",null,contentValues);
-                                        System.out.println("Guardado--------------");
-                                        break;
-                                        //Toast.makeText(getApplicationContext(), "No existe", Toast.LENGTH_SHORT).show();
-                                    }
+
+                                        try {
+                                            ContentValues contentValues = new ContentValues();
+                                            contentValues.put("session", true);
+                                            sqLiteDatabase.update("usuario", contentValues, "_id=" + Integer.valueOf(id), null);
+                                            Log.i("Login", "User updated to true");
+                                            System.out.println("User updated to true");
+                                            break;
+                                        } catch (NumberFormatException e) {
+                                            e.printStackTrace();
+                                            Log.e("Login", "User updated to true FAILED");
+                                        }
 
                                 }
                                 while (cursor.moveToNext());
+
                             }else {
-                                ContentValues contentValues = new ContentValues();
-                                contentValues.put("_id", Integer.valueOf(id));
-                                contentValues.put("nombre", userName);
-                                contentValues.put("email", sqliteEmail);
-                                contentValues.put("contrasena", sqlitePassword);
-                                contentValues.put("session", true);
-                                sqLiteDatabase.insert("usuario",null,contentValues);
-                                System.out.println("guardado00000000000000000");
+                                try {
+                                    ContentValues contentValues = new ContentValues();
+                                    contentValues.put("_id", Integer.valueOf(id));
+                                    contentValues.put("nombre", userName);
+                                    contentValues.put("email", sqliteEmail);
+                                    contentValues.put("contrasena", sqlitePassword);
+                                    contentValues.put("session", true);
+                                    sqLiteDatabase.insert("usuario", null, contentValues);
+                                    Log.i("Login", "User inserted");
+                                    System.out.println("guardado00000000000000000");
+                                } catch (NumberFormatException e) {
+                                    e.printStackTrace();
+                                    Log.e("Login", "User inserted FAILED");
+                                }
                             }
                             cursor.close();
 
-
-
-                            Intent intent = new Intent(LoginActivity.this, MeasureActivity.class);
-                            intent.putExtra("id", Integer.valueOf(id));
-                            intent.putExtra("mail", email.getText().toString());
-                            intent.putExtra("name", userName);
-                            startActivity(intent);
-                            finish();
+                            try {
+                                Intent intent = new Intent(LoginActivity.this, MeasureActivity.class);
+                                intent.putExtra("id", Integer.valueOf(id));
+                                intent.putExtra("mail", email.getText().toString());
+                                intent.putExtra("name", userName);
+                                startActivity(intent);
+                                finish();
+                            } catch (NumberFormatException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }, 3500);
-
-
-
 
             }
         });
@@ -228,7 +242,19 @@ public class LoginActivity extends Activity {
         register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new HttpAsyncTask().execute("http://192.168.1.5:3000/user");
+
+                try {
+                    new HttpAsyncTask().execute("http://192.168.1.5:3000/user");
+                    signIn.setTextColor(Color.WHITE);
+                    signUp.setTextColor(Color.GRAY);
+                    name.setVisibility(View.INVISIBLE);
+                    register.setVisibility(View.INVISIBLE);
+                    btnIngresar.setVisibility(View.VISIBLE);
+                    progress.setVisibility(View.VISIBLE);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    progress.setVisibility(View.INVISIBLE);
+                }
 
             }
         });
@@ -360,9 +386,10 @@ public class LoginActivity extends Activity {
         protected void onPostExecute(String result) {
             if(result.equals("201")){
                 Toast.makeText(getBaseContext(), "Create success", Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(LoginActivity.this, MeasureActivity.class);
-                startActivity(intent);
-                finish();
+
+//                Intent intent = new Intent(LoginActivity.this, MeasureActivity.class);
+//                startActivity(intent);
+//                finish();
             }else {
                 Toast.makeText(getBaseContext(), "Failure in create user", Toast.LENGTH_LONG).show();
             }

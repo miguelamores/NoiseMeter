@@ -35,6 +35,8 @@
                 android:text="Sign up"
                 android:id="@+id/signUpTextView"
                 android:textColor="#bcbcbc" />
+
+
         </LinearLayout>
 
         <LinearLayout
@@ -111,6 +113,21 @@
                 android:layout_marginTop="30dp"
                 android:layout_gravity="center_horizontal"
                 android:textColor="#ffffff" />
+
+            <com.gc.materialdesign.views.ProgressBarCircularIndeterminate
+                android:id="@+id/progressBarCircularIndeterminate"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center_horizontal"
+                android:background="#1E88E5" />
+
+            <com.gc.materialdesign.views.ButtonRectangle
+                android:id="@+id/button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#1E88E5"
+                android:text="Button" />
+
         </LinearLayout>
 
     </LinearLayout>

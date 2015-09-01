@@ -12,7 +12,10 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.TileOverlay;
+import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.maps.android.heatmaps.HeatmapTileProvider;
+import com.google.maps.android.heatmaps.WeightedLatLng;
 
 import java.util.ArrayList;
 
@@ -21,7 +24,7 @@ public class MapsActivity extends FragmentActivity {
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     SQLiteDatabase sqLiteDatabase;
     Medicion medicion;
-
+    HeatmapTileProvider heatMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +78,10 @@ public class MapsActivity extends FragmentActivity {
      */
     private void setUpMap() {
 
+        ArrayList<WeightedLatLng> list = new ArrayList<>();
+        LatLng latLng;
+        WeightedLatLng weightedLatLng;
+
         final SQLHelper sqlHelper = new SQLHelper(this);
         sqLiteDatabase = sqlHelper.getWritableDatabase();
         Cursor cursor;
@@ -85,16 +92,27 @@ public class MapsActivity extends FragmentActivity {
         ArrayList<Medicion> medicions = new ArrayList<>();
         if (cursor.moveToFirst()) {
             do {
-                medicion = new Medicion();
-                medicion.setValor_db(cursor.getInt(0));
-                medicion.setLatitud(cursor.getDouble(1));
-                medicion.setLongitud(cursor.getDouble(2));
-                medicions.add(0, medicion);
-                mMap.addMarker(new MarkerOptions().position(new LatLng(medicion.getLatitud(), medicion.getLongitud())).title(String.valueOf(medicion.getValor_db())+" dB"));
+
+                latLng = new LatLng(cursor.getDouble(1), cursor.getDouble(2));
+                weightedLatLng = new WeightedLatLng(latLng, cursor.getDouble(0));
+                //latLng = new LatLng(-0.180653, -78.467834);
+                //list.add(latLng);
+                list.add(weightedLatLng);
+
+//                medicion = new Medicion();
+//                medicion.setValor_db(cursor.getInt(0));
+//                medicion.setLatitud(cursor.getDouble(1));
+//                medicion.setLongitud(cursor.getDouble(2));
+//                medicions.add(0, medicion);
+//                mMap.addMarker(new MarkerOptions().position(new LatLng(medicion.getLatitud(), medicion.getLongitud())).title(String.valueOf(medicion.getValor_db())+" dB"));
             }
             while (cursor.moveToNext());
         }
         cursor.close();
 
+        //heatMap = new HeatmapTileProvider.Builder().data(list).build();
+        heatMap = new HeatmapTileProvider.Builder().weightedData(list).build();
+
+        TileOverlay mOveray = mMap.addTileOverlay(new TileOverlayOptions().tileProvider(heatMap));
     }
 }
