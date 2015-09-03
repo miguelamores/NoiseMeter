@@ -28,6 +28,8 @@ import android.widget.Toast;
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
 import com.example.miguelamores.data.Medicion;
 import com.example.miguelamores.data.SQLHelper;
+import com.gc.materialdesign.views.ButtonFloat;
+import com.gc.materialdesign.views.ButtonRectangle;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -45,7 +47,8 @@ public class MeasureActivity extends Activity{
     double powerDb = 0;
 
     TextView tex, welcome;
-    Button btnPlay, btnParar, btnMap, btnSave;
+    Button btnMap;
+    ButtonRectangle btnPlay, btnParar, btnSave;
     GPSTracker gps;
     Handler handler = new Handler();
     Runnable runnable;
@@ -71,12 +74,13 @@ public class MeasureActivity extends Activity{
 
 
         tex = (TextView)findViewById(R.id.textView);
-        btnPlay = (Button)findViewById(R.id.btnPlay);
-        btnParar = (Button)findViewById(R.id.btnParar);
+        btnPlay = (ButtonRectangle)findViewById(R.id.btnPlay);
+        btnParar = (ButtonRectangle)findViewById(R.id.btnParar);
         btnMap = (Button)findViewById(R.id.mapButton);
-        btnSave = (Button)findViewById(R.id.saveButton);
+        btnSave = (ButtonRectangle)findViewById(R.id.saveButton);
         welcome = (TextView)findViewById(R.id.welcomeTextView);
         speedometer = (SpeedometerGauge) findViewById(R.id.speedometer);
+
 
         Bundle extras = getIntent().getExtras();
         name = getIntent().getStringExtra("name");

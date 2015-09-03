@@ -96,23 +96,30 @@
             android:layout_height="match_parent"
             android:weightSum="1">
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Register"
-                android:visibility="invisible"
-                android:id="@+id/registerButton"
-                android:layout_gravity="center_horizontal"
-                android:textColor="#ffffff" />
+            <!--<Button-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:text="Register"-->
+                <!--android:visibility="invisible"-->
+                <!--android:id="@+id/registerButton"-->
+                <!--android:layout_gravity="center_horizontal"-->
+                <!--android:textColor="#ffffff" />-->
 
-            <Button
-                android:layout_width="wrap_content"
+            <com.gc.materialdesign.views.ButtonRectangle
+                android:id="@+id/registerButton"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Login"
-                android:id="@+id/loginButton"
-                android:layout_marginTop="30dp"
-                android:layout_gravity="center_horizontal"
-                android:textColor="#ffffff" />
+                android:background="#1E88E5"
+                android:text="Register" />
+
+            <!--<Button-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:text="Login"-->
+                <!--android:id="@+id/loginButton"-->
+                <!--android:layout_marginTop="30dp"-->
+                <!--android:layout_gravity="center_horizontal"-->
+                <!--android:textColor="#ffffff" />-->
 
             <com.gc.materialdesign.views.ProgressBarCircularIndeterminate
                 android:id="@+id/progressBarCircularIndeterminate"
@@ -122,11 +129,11 @@
                 android:background="#1E88E5" />
 
             <com.gc.materialdesign.views.ButtonRectangle
-                android:id="@+id/button"
-                android:layout_width="wrap_content"
+                android:id="@+id/loginButton"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="#1E88E5"
-                android:text="Button" />
+                android:text="Login" />
 
         </LinearLayout>
 

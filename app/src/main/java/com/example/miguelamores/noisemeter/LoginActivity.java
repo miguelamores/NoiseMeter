@@ -29,7 +29,9 @@ import com.example.miguelamores.data.SQLHelper;
 import com.example.miguelamores.data.User;
 import com.gc.materialdesign.views.ButtonFlat;
 import com.gc.materialdesign.views.ButtonFloat;
+import com.gc.materialdesign.views.ButtonRectangle;
 import com.gc.materialdesign.views.ProgressBarCircularIndeterminate;
+import com.gc.materialdesign.widgets.SnackBar;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -52,7 +54,7 @@ import measureRest.UserGet;
 
 public class LoginActivity extends Activity {
 
-    private Button btnIngresar, register;
+    private ButtonRectangle btnIngresar, register;
     private TextView signIn, signUp;
     private EditText name, email, password;
     private ProgressBarCircularIndeterminate progress;
@@ -100,7 +102,9 @@ public class LoginActivity extends Activity {
 
 
         if(!isConnected()){
-            Toast.makeText(getApplicationContext(), "You don't have internet connection", Toast.LENGTH_LONG).show();
+            SnackBar snackBar = new SnackBar(LoginActivity.this, "You don't have internet connection");
+            snackBar.show();
+            //Toast.makeText(getApplicationContext(), "You don't have internet connection", Toast.LENGTH_LONG).show();
         }
 
 
@@ -109,9 +113,11 @@ public class LoginActivity extends Activity {
         name = (EditText) findViewById(R.id.nameEditText);
         email = (EditText) findViewById(R.id.emailEditText);
         password = (EditText) findViewById(R.id.passwordEditText);
-        register = (Button) findViewById(R.id.registerButton);
+        register = (ButtonRectangle) findViewById(R.id.registerButton);
         progress = (ProgressBarCircularIndeterminate) findViewById(R.id.progressBarCircularIndeterminate);
         progress.setVisibility(View.INVISIBLE);
+
+        register.setVisibility(View.INVISIBLE);
 
         signUp.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -137,7 +143,8 @@ public class LoginActivity extends Activity {
             }
         });
 
-        btnIngresar = (Button) findViewById(R.id.loginButton);
+//        btnIngresar = (Button) findViewById(R.id.loginButton);
+        btnIngresar = (ButtonRectangle) findViewById(R.id.loginButton);
         btnIngresar.setEnabled(true);
 
 
@@ -162,7 +169,7 @@ public class LoginActivity extends Activity {
                             progress.setVisibility(View.VISIBLE);
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            Toast.makeText(getBaseContext(), "Failure in login. Try again.", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getBaseContext(), "Failure in login. Try again.", Toast.LENGTH_SHORT).show();
                             btnIngresar.setEnabled(true);
                             progress.setEnabled(false);
                         }
@@ -178,11 +185,10 @@ public class LoginActivity extends Activity {
                     @Override
                     public void run() {
                         if (statusCode.equals("404")){
-                            Toast.makeText(getApplicationContext(), "Email or password are incorrect "+ statusCode, Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), "Email or password are incorrect.", Toast.LENGTH_LONG).show();
                         }else {
 
                             Cursor cursor;
-                            //cursor = sqLiteDatabase.query("usuario", new String[]{"_id"}, null, null, null, null, null);
                             cursor = sqLiteDatabase.query("usuario", new String[]{"_id"}, "_id=?", new String[]{id.toString()}, null, null, null);
 
 
@@ -194,7 +200,6 @@ public class LoginActivity extends Activity {
                                             contentValues.put("session", true);
                                             sqLiteDatabase.update("usuario", contentValues, "_id=" + Integer.valueOf(id), null);
                                             Log.i("Login", "User updated to true");
-                                            System.out.println("User updated to true");
                                             break;
                                         } catch (NumberFormatException e) {
                                             e.printStackTrace();
@@ -214,7 +219,6 @@ public class LoginActivity extends Activity {
                                     contentValues.put("session", true);
                                     sqLiteDatabase.insert("usuario", null, contentValues);
                                     Log.i("Login", "User inserted");
-                                    System.out.println("guardado00000000000000000");
                                 } catch (NumberFormatException e) {
                                     e.printStackTrace();
                                     Log.e("Login", "User inserted FAILED");
@@ -250,10 +254,9 @@ public class LoginActivity extends Activity {
                     name.setVisibility(View.INVISIBLE);
                     register.setVisibility(View.INVISIBLE);
                     btnIngresar.setVisibility(View.VISIBLE);
-                    progress.setVisibility(View.VISIBLE);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    progress.setVisibility(View.INVISIBLE);
+
                 }
 
             }
@@ -392,6 +395,7 @@ public class LoginActivity extends Activity {
 //                finish();
             }else {
                 Toast.makeText(getBaseContext(), "Failure in create user", Toast.LENGTH_LONG).show();
+                progress.setVisibility(View.INVISIBLE);
             }
 
         }
