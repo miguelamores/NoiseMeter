@@ -15,6 +15,8 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -47,6 +49,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 
 import measureRest.UserGet;
@@ -114,6 +117,8 @@ public class LoginActivity extends Activity {
         email = (EditText) findViewById(R.id.emailEditText);
         password = (EditText) findViewById(R.id.passwordEditText);
         register = (ButtonRectangle) findViewById(R.id.registerButton);
+        final String emailText = email.getText().toString().trim();
+        final String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
         progress = (ProgressBarCircularIndeterminate) findViewById(R.id.progressBarCircularIndeterminate);
         progress.setVisibility(View.INVISIBLE);
 
@@ -159,6 +164,7 @@ public class LoginActivity extends Activity {
                     public void getUserRest(String response) {
 
                         statusCode = response;
+
                         try {
                             btnIngresar.setEnabled(false);
                             JSONObject jsonObject = new JSONObject(statusCode);
@@ -184,16 +190,27 @@ public class LoginActivity extends Activity {
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        if (statusCode.equals("404")){
-                            Toast.makeText(getApplicationContext(), "Email or password are incorrect.", Toast.LENGTH_LONG).show();
-                        }else {
-
-                            Cursor cursor;
-                            cursor = sqLiteDatabase.query("usuario", new String[]{"_id"}, "_id=?", new String[]{id.toString()}, null, null, null);
 
 
-                            if (cursor.moveToFirst()) {
-                                do {
+                        if (statusCode.equals("0")) {
+                            try {
+                                throw new SocketTimeoutException();
+                            } catch (SocketTimeoutException e) {
+                                SnackBar snackBar = new SnackBar(LoginActivity.this, "Server is down!");
+                                snackBar.show();
+                            }
+                        } else {
+
+                            if (statusCode.equals("404") || statusCode.equals("500")) {
+                                Toast.makeText(getApplicationContext(), "Email or password are incorrect.", Toast.LENGTH_LONG).show();
+                            } else {
+
+                                Cursor cursor;
+                                cursor = sqLiteDatabase.query("usuario", new String[]{"_id"}, "_id=?", new String[]{id.toString()}, null, null, null);
+
+
+                                if (cursor.moveToFirst()) {
+                                    do {
 
                                         try {
                                             ContentValues contentValues = new ContentValues();
@@ -206,35 +223,36 @@ public class LoginActivity extends Activity {
                                             Log.e("Login", "User updated to true FAILED");
                                         }
 
-                                }
-                                while (cursor.moveToNext());
+                                    }
+                                    while (cursor.moveToNext());
 
-                            }else {
+                                } else {
+                                    try {
+                                        ContentValues contentValues = new ContentValues();
+                                        contentValues.put("_id", Integer.valueOf(id));
+                                        contentValues.put("nombre", userName);
+                                        contentValues.put("email", sqliteEmail);
+                                        contentValues.put("contrasena", sqlitePassword);
+                                        contentValues.put("session", true);
+                                        sqLiteDatabase.insert("usuario", null, contentValues);
+                                        Log.i("Login", "User inserted");
+                                    } catch (NumberFormatException e) {
+                                        e.printStackTrace();
+                                        Log.e("Login", "User inserted FAILED");
+                                    }
+                                }
+                                cursor.close();
+
                                 try {
-                                    ContentValues contentValues = new ContentValues();
-                                    contentValues.put("_id", Integer.valueOf(id));
-                                    contentValues.put("nombre", userName);
-                                    contentValues.put("email", sqliteEmail);
-                                    contentValues.put("contrasena", sqlitePassword);
-                                    contentValues.put("session", true);
-                                    sqLiteDatabase.insert("usuario", null, contentValues);
-                                    Log.i("Login", "User inserted");
+                                    Intent intent = new Intent(LoginActivity.this, MeasureActivity.class);
+                                    intent.putExtra("id", Integer.valueOf(id));
+                                    intent.putExtra("mail", email.getText().toString());
+                                    intent.putExtra("name", userName);
+                                    startActivity(intent);
+                                    finish();
                                 } catch (NumberFormatException e) {
                                     e.printStackTrace();
-                                    Log.e("Login", "User inserted FAILED");
                                 }
-                            }
-                            cursor.close();
-
-                            try {
-                                Intent intent = new Intent(LoginActivity.this, MeasureActivity.class);
-                                intent.putExtra("id", Integer.valueOf(id));
-                                intent.putExtra("mail", email.getText().toString());
-                                intent.putExtra("name", userName);
-                                startActivity(intent);
-                                finish();
-                            } catch (NumberFormatException e) {
-                                e.printStackTrace();
                             }
                         }
                     }
@@ -261,6 +279,7 @@ public class LoginActivity extends Activity {
 
             }
         });
+
 
     }
 
@@ -409,6 +428,8 @@ public class LoginActivity extends Activity {
         else
             return false;
     }
+
+
 
 
 }

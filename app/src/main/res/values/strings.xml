@@ -4,7 +4,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Logout</string>
     <string name="title_activity_login">LoginActivity</string>
-    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_maps">HeatMap</string>
     <string name="title_activity_sign">SignActivity</string>
 
     <string name="title_section1">Section 1</string>

@@ -28,8 +28,8 @@ import android.widget.Toast;
 import com.cardiomood.android.controls.gauge.SpeedometerGauge;
 import com.example.miguelamores.data.Medicion;
 import com.example.miguelamores.data.SQLHelper;
-import com.gc.materialdesign.views.ButtonFloat;
 import com.gc.materialdesign.views.ButtonRectangle;
+import com.gc.materialdesign.widgets.SnackBar;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -76,10 +76,12 @@ public class MeasureActivity extends Activity{
         tex = (TextView)findViewById(R.id.textView);
         btnPlay = (ButtonRectangle)findViewById(R.id.btnPlay);
         btnParar = (ButtonRectangle)findViewById(R.id.btnParar);
-        btnMap = (Button)findViewById(R.id.mapButton);
         btnSave = (ButtonRectangle)findViewById(R.id.saveButton);
         welcome = (TextView)findViewById(R.id.welcomeTextView);
         speedometer = (SpeedometerGauge) findViewById(R.id.speedometer);
+
+        btnParar.setEnabled(false);
+        btnSave.setEnabled(false);
 
 
         Bundle extras = getIntent().getExtras();
@@ -114,8 +116,8 @@ public class MeasureActivity extends Activity{
                 double amp = getAmplitude();
                 //mEMA = EMA_FILTER * amp + (1.0 - EMA_FILTER) * mEMA;
                 mEMA = 5*EMA_FILTER * amp + (1.0 - EMA_FILTER) * mEMA;
+                mEMA = mEMA + 20;
 
-                //setGauge(powerDb);
                 speedometer.setSpeed(mEMA);
                 tex.setText(String.valueOf(String.format("%.2f",mEMA)));
                 //tex.setText(String.valueOf(powerDb)+" dB");
@@ -147,8 +149,9 @@ public class MeasureActivity extends Activity{
             @Override
             public void onClick(View v) {
 
-
-                gps = new GPSTracker(getApplicationContext());
+                btnParar.setEnabled(true);
+                btnSave.setEnabled(false);
+                gps = new GPSTracker(MeasureActivity.this);
 
                 if (gps.canGetLocation()) {
                     latitude = gps.getLatitude();
@@ -178,6 +181,7 @@ public class MeasureActivity extends Activity{
             @Override
             public void onClick(View v) {
                 stop();
+                btnSave.setEnabled(true);
             }
         });
 
@@ -185,24 +189,24 @@ public class MeasureActivity extends Activity{
             @Override
             public void onClick(View view) {
 
-                new HttpAsyncTask().execute("http://192.168.1.5:3000/measure");
+                if(latitude != 0 && longitude != 0){
 
-                ContentValues contentValues = new ContentValues();
-                contentValues.put("valor_db", mEMA);
-                contentValues.put("latitud", latitude);
-                contentValues.put("longitud", longitude);
-                contentValues.put("hora", String.valueOf(new Date()));
-                contentValues.put("usuario_id", 1);
-                sqLiteDatabase.insert("medicion", null, contentValues);
-                Toast.makeText(MeasureActivity.this, "Medicion guardada", Toast.LENGTH_LONG).show();
-            }
-        });
+                    new HttpAsyncTask().execute("http://192.168.1.5:3000/measure");
 
-        btnMap.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MeasureActivity.this, MapsActivity.class);
-                startActivity(intent);
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put("valor_db", mEMA);
+                    contentValues.put("latitud", latitude);
+                    contentValues.put("longitud", longitude);
+                    contentValues.put("hora", String.valueOf(new Date()));
+                    contentValues.put("usuario_id", 1);
+                    sqLiteDatabase.insert("medicion", null, contentValues);
+                    Toast.makeText(MeasureActivity.this, "Measure saved!", Toast.LENGTH_LONG).show();
+                }else {
+                    SnackBar snackBar = new SnackBar(MeasureActivity.this, "GPS is disabled!");
+                    snackBar.show();
+                }
+
+
             }
         });
 
@@ -239,6 +243,11 @@ public class MeasureActivity extends Activity{
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+
+        if (id == R.id.action_map) {
+            Intent intent = new Intent(MeasureActivity.this, MapsActivity.class);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
@@ -282,6 +291,7 @@ public class MeasureActivity extends Activity{
 
     public static String POST(String url, Medicion medicion){
         InputStream inputStream = null;
+        int code = 0;
         String result = "";
         try {
 
@@ -319,6 +329,10 @@ public class MeasureActivity extends Activity{
 
             // 8. Execute POST request to the given URL
             HttpResponse httpResponse = httpclient.execute(httpPost);
+            code = httpResponse.getStatusLine().getStatusCode();
+            if(code != 201){
+                throw new Exception();
+            }
 
             // 9. receive response as inputStream
             inputStream = httpResponse.getEntity().getContent();
@@ -330,11 +344,12 @@ public class MeasureActivity extends Activity{
                 result = "Did not work!";
 
         } catch (Exception e) {
-            Log.d("InputStream", e.getLocalizedMessage());
+            //Log.d("InputStream", e.getLocalizedMessage());
+            return String.valueOf(code);
         }
 
         // 11. return result
-        return result;
+        return String.valueOf(code);
     }
 
     private static String convertInputStreamToString(InputStream inputStream) throws IOException{
@@ -376,7 +391,13 @@ public class MeasureActivity extends Activity{
         // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
-            Toast.makeText(getBaseContext(), "Data Sent!: " + result, Toast.LENGTH_LONG).show();
+            if (result.equals("201")){
+                SnackBar snackBar = new SnackBar(MeasureActivity.this, "Data sent to server.");
+                snackBar.show();
+            } else {
+                SnackBar snackBar = new SnackBar(MeasureActivity.this, "Error sending data to server.");
+                snackBar.show();
+            }
         }
     }
 

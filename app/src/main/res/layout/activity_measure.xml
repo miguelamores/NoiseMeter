@@ -28,16 +28,10 @@
         android:layout_height="wrap_content"
         android:text=""
         android:textSize="80px"
-        android:id="@+id/textView" />
+        android:textColor="@android:color/white"
+        android:id="@+id/textView"
+        android:layout_gravity="center_horizontal" />
 
-
-    <!--<Button-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="Play"-->
-        <!--android:id="@+id/btnPlay"-->
-        <!--android:layout_gravity="center_horizontal"-->
-        <!--android:textColor="#ffffff" />-->
 
     <com.gc.materialdesign.views.ButtonRectangle
         android:id="@+id/btnPlay"
@@ -48,15 +42,6 @@
         android:layout_gravity="center_horizontal" />
 
 
-
-    <!--<Button-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="Parar"-->
-        <!--android:id="@+id/btnParar"-->
-        <!--android:layout_gravity="center_horizontal"-->
-        <!--android:textColor="#ffffff" />-->
-
     <com.gc.materialdesign.views.ButtonRectangle
         android:id="@+id/btnParar"
         android:layout_width="wrap_content"
@@ -65,13 +50,6 @@
         android:text="Stop"
         android:layout_gravity="center_horizontal" />
 
-    <!--<Button-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="Save"-->
-        <!--android:id="@+id/saveButton"-->
-        <!--android:layout_gravity="center_horizontal"-->
-        <!--android:textColor="#ffffff" />-->
 
     <com.gc.materialdesign.views.ButtonRectangle
         android:id="@+id/saveButton"
@@ -80,20 +58,6 @@
         android:background="#1E88E5"
         android:text="Save"
         android:layout_gravity="center_horizontal" />
-
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Go Map"
-        android:id="@+id/mapButton"
-        android:layout_gravity="center_horizontal"
-        android:textColor="#ffffff" />
-
-
-
-
-
 
 
 </LinearLayout>

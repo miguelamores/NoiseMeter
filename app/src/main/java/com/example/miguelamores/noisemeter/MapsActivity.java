@@ -2,6 +2,7 @@ package com.example.miguelamores.noisemeter;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 
@@ -14,6 +15,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
+import com.google.maps.android.heatmaps.Gradient;
 import com.google.maps.android.heatmaps.HeatmapTileProvider;
 import com.google.maps.android.heatmaps.WeightedLatLng;
 
@@ -33,7 +35,8 @@ public class MapsActivity extends FragmentActivity {
 
         setUpMapIfNeeded();
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-0.180653, -78.467834), 6));
-        mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+        mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+        //mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
     }
 
     @Override
@@ -86,6 +89,20 @@ public class MapsActivity extends FragmentActivity {
         sqLiteDatabase = sqlHelper.getWritableDatabase();
         Cursor cursor;
 
+
+        // Create the gradient.
+        int[] colors = {
+                Color.rgb(102, 225, 0), // green
+                Color.rgb(255, 0, 0)    // red
+        };
+
+        float[] startPoints = {
+                0.2f, 1f
+        };
+
+        Gradient gradient = new Gradient(colors, startPoints);
+
+
         //cursor = sqLiteDatabase.query("medicion",null,null,null,null,null,null);
         cursor = sqLiteDatabase.query("medicion", new String[]{"valor_db", "latitud", "longitud"}, null, null, null, null, null);
 
@@ -104,15 +121,17 @@ public class MapsActivity extends FragmentActivity {
 //                medicion.setLatitud(cursor.getDouble(1));
 //                medicion.setLongitud(cursor.getDouble(2));
 //                medicions.add(0, medicion);
-//                mMap.addMarker(new MarkerOptions().position(new LatLng(medicion.getLatitud(), medicion.getLongitud())).title(String.valueOf(medicion.getValor_db())+" dB"));
+//                mMap.addMarker(new MarkerOptions().position(latLng).title(String.valueOf(medicion.getValor_db())+" dB"));
+                mMap.addMarker(new MarkerOptions().position(latLng).title(String.valueOf(cursor.getDouble(0))+" dB"));
             }
             while (cursor.moveToNext());
         }
         cursor.close();
 
         //heatMap = new HeatmapTileProvider.Builder().data(list).build();
-        heatMap = new HeatmapTileProvider.Builder().weightedData(list).build();
-
+        heatMap = new HeatmapTileProvider.Builder().weightedData(list).gradient(gradient).build();
         TileOverlay mOveray = mMap.addTileOverlay(new TileOverlayOptions().tileProvider(heatMap));
     }
+
+
 }
