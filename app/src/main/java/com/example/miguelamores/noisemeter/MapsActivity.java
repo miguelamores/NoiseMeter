@@ -19,7 +19,10 @@ import com.google.maps.android.heatmaps.Gradient;
 import com.google.maps.android.heatmaps.HeatmapTileProvider;
 import com.google.maps.android.heatmaps.WeightedLatLng;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class MapsActivity extends FragmentActivity {
 
@@ -104,7 +107,7 @@ public class MapsActivity extends FragmentActivity {
 
 
         //cursor = sqLiteDatabase.query("medicion",null,null,null,null,null,null);
-        cursor = sqLiteDatabase.query("medicion", new String[]{"valor_db", "latitud", "longitud"}, null, null, null, null, null);
+        cursor = sqLiteDatabase.query("medicion", new String[]{"valor_db", "latitud", "longitud", "hora"}, null, null, null, null, null);
 
         ArrayList<Medicion> medicions = new ArrayList<>();
         if (cursor.moveToFirst()) {
@@ -122,7 +125,8 @@ public class MapsActivity extends FragmentActivity {
 //                medicion.setLongitud(cursor.getDouble(2));
 //                medicions.add(0, medicion);
 //                mMap.addMarker(new MarkerOptions().position(latLng).title(String.valueOf(medicion.getValor_db())+" dB"));
-                mMap.addMarker(new MarkerOptions().position(latLng).title(String.valueOf(cursor.getDouble(0))+" dB"));
+                mMap.addMarker(new MarkerOptions().position(latLng).title(String.valueOf(String.format("%.2f", cursor.getDouble(0))) +
+                        " dB"));
             }
             while (cursor.moveToNext());
         }
