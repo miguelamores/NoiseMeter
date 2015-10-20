@@ -50,12 +50,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-
 import measureRest.UserGet;
 
 
 public class LoginActivity extends Activity {
+
+    private static final String url = "polar-fjord-2695.herokuapp.com";
 
     private ButtonRectangle btnIngresar, register;
     private TextView signIn, signUp;
@@ -117,8 +117,6 @@ public class LoginActivity extends Activity {
         email = (EditText) findViewById(R.id.emailEditText);
         password = (EditText) findViewById(R.id.passwordEditText);
         register = (ButtonRectangle) findViewById(R.id.registerButton);
-        final String emailText = email.getText().toString().trim();
-        final String emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
         progress = (ProgressBarCircularIndeterminate) findViewById(R.id.progressBarCircularIndeterminate);
         progress.setVisibility(View.INVISIBLE);
 
@@ -148,7 +146,7 @@ public class LoginActivity extends Activity {
             }
         });
 
-//        btnIngresar = (Button) findViewById(R.id.loginButton);
+
         btnIngresar = (ButtonRectangle) findViewById(R.id.loginButton);
         btnIngresar.setEnabled(true);
 
@@ -157,7 +155,6 @@ public class LoginActivity extends Activity {
         btnIngresar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
 
                 userGet = new UserGet(new AsyncResponseUser() {
                     @Override
@@ -182,7 +179,7 @@ public class LoginActivity extends Activity {
 
                     }
                 });
-                userGet.execute("http://192.168.1.5:3000/user" + "?mail=" + email.getText().toString() + "&password=" + password.getText().toString());
+                userGet.execute("https://"+url+"/user" + "?mail=" + email.getText().toString() + "&password=" + password.getText().toString());
 
 
                 // Validate login data
@@ -266,7 +263,7 @@ public class LoginActivity extends Activity {
             public void onClick(View view) {
 
                 try {
-                    new HttpAsyncTask().execute("http://192.168.1.5:3000/user");
+                    new HttpAsyncTask().execute("https://"+url+"/user");
                     signIn.setTextColor(Color.WHITE);
                     signUp.setTextColor(Color.GRAY);
                     name.setVisibility(View.INVISIBLE);

@@ -43,6 +43,8 @@ import measureRest.MeasureGet;
 
 public class MeasureActivity extends Activity{
 
+    private static final String url = "polar-fjord-2695.herokuapp.com";
+
     private MediaRecorder mRecorder = null;
     double powerDb = 0;
 
@@ -99,7 +101,7 @@ public class MeasureActivity extends Activity{
             }
 
         });
-        measureGet.execute("http://192.168.1.5:3000/measure");
+        measureGet.execute("https://"+url+"/measure");
 
         final SQLHelper sqlHelper = new SQLHelper(this);
         sqLiteDatabase = sqlHelper.getWritableDatabase();
@@ -112,14 +114,16 @@ public class MeasureActivity extends Activity{
                 tex.setText(String.valueOf(powerDb));
 
                 //powerDb = (20 * Math.log10(getAmplitude()/1));
-                //powerDb = (20 * Math.log10(getAmplitude()));
-                double amp = getAmplitude();
+                powerDb = (20 * Math.log10(getAmplitude()));
+                //double amp = getAmplitude();
                 //mEMA = EMA_FILTER * amp + (1.0 - EMA_FILTER) * mEMA;
-                mEMA = 5*EMA_FILTER * amp + (1.0 - EMA_FILTER) * mEMA;
-                mEMA = mEMA + 20;
+                //mEMA = 0; EMA_FILTER = 0.6
 
-                speedometer.setSpeed(mEMA);
-                tex.setText(String.valueOf(String.format("%.2f",mEMA)));
+                //mEMA = 5*EMA_FILTER * amp + (1.0 - EMA_FILTER) * mEMA;
+                //mEMA = mEMA + 30;
+
+                speedometer.setSpeed(powerDb);
+                tex.setText(String.valueOf(String.format("%.2f",powerDb)));
                 //tex.setText(String.valueOf(powerDb)+" dB");
 
                 handler.postDelayed(this, 500);
@@ -154,6 +158,7 @@ public class MeasureActivity extends Activity{
                 gps = new GPSTracker(MeasureActivity.this);
 
                 if (gps.canGetLocation()) {
+
                     latitude = gps.getLatitude();
                     longitude = gps.getLongitude();
 
@@ -161,18 +166,31 @@ public class MeasureActivity extends Activity{
                             getApplicationContext(),
                             "Your location is -\nLat: " + latitude + "\nLong: "
                                     + longitude, Toast.LENGTH_LONG).show();
+
+
+                    try {
+                        start();
+                        handler.removeCallbacks(runnable);
+                        handler.postDelayed(runnable, 0);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
                 } else {
+                    stop();
+                    btnParar.setEnabled(false);
                     gps.showSettingsAlert();
+
                 }
 
 
-                try {
-                    start();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                handler.removeCallbacks(runnable);
-                handler.postDelayed(runnable, 0);
+//                try {
+//                    start();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                handler.removeCallbacks(runnable);
+//                handler.postDelayed(runnable, 0);
 
             }
         });
@@ -191,10 +209,10 @@ public class MeasureActivity extends Activity{
 
                 if(latitude != 0 && longitude != 0){
 
-                    new HttpAsyncTask().execute("http://192.168.1.5:3000/measure");
+                    new HttpAsyncTask().execute("https://"+url+"/measure");
 
                     ContentValues contentValues = new ContentValues();
-                    contentValues.put("valor_db", mEMA);
+                    contentValues.put("valor_db", powerDb);
                     contentValues.put("latitud", latitude);
                     contentValues.put("longitud", longitude);
                     contentValues.put("hora", String.valueOf(new Date()));
@@ -256,7 +274,7 @@ public class MeasureActivity extends Activity{
 
     public double getAmplitude() {
         if (mRecorder != null)
-            return (mRecorder.getMaxAmplitude()/2700.0);
+            return (mRecorder.getMaxAmplitude()+1);
         //return (mRecorder.getMaxAmplitude()/2700.0);
         else
             return 0;
@@ -381,7 +399,7 @@ public class MeasureActivity extends Activity{
 
             Medicion medicion = new Medicion();
 
-            medicion.setValor_db(mEMA);
+            medicion.setValor_db(powerDb);
             medicion.setLongitud(longitude);
             medicion.setLatitud(latitude);
             medicion.setUsuario_id(idUser);
