@@ -93,15 +93,15 @@ public class MeasureActivity extends Activity{
         welcome.setText("Welcome " + name);
         welcome.setTextColor(Color.WHITE);
 
-
-        measureGet = new MeasureGet(new AsyncResponseMeasure() {
-            @Override
-            public void getMeasureRest(String output) {
-                //Toast.makeText(getApplicationContext(),output,Toast.LENGTH_LONG).show();
-            }
-
-        });
-        measureGet.execute("https://"+url+"/measure");
+        //Obtener mediciones
+//        measureGet = new MeasureGet(new AsyncResponseMeasure() {
+//            @Override
+//            public void getMeasureRest(String output) {
+//                //Toast.makeText(getApplicationContext(),output,Toast.LENGTH_LONG).show();
+//            }
+//
+//        });
+//        measureGet.execute("https://"+url+"/measure");
 
         final SQLHelper sqlHelper = new SQLHelper(this);
         sqLiteDatabase = sqlHelper.getWritableDatabase();
@@ -110,21 +110,10 @@ public class MeasureActivity extends Activity{
             @Override
             public void run() {
                 powerDb = 0;
-
                 tex.setText(String.valueOf(powerDb));
-
-                //powerDb = (20 * Math.log10(getAmplitude()/1));
                 powerDb = (20 * Math.log10(getAmplitude()));
-                //double amp = getAmplitude();
-                //mEMA = EMA_FILTER * amp + (1.0 - EMA_FILTER) * mEMA;
-                //mEMA = 0; EMA_FILTER = 0.6
-
-                //mEMA = 5*EMA_FILTER * amp + (1.0 - EMA_FILTER) * mEMA;
-                //mEMA = mEMA + 30;
-
                 speedometer.setSpeed(powerDb);
                 tex.setText(String.valueOf(String.format("%.2f",powerDb)));
-                //tex.setText(String.valueOf(powerDb)+" dB");
 
                 handler.postDelayed(this, 500);
             }
@@ -216,7 +205,7 @@ public class MeasureActivity extends Activity{
                     contentValues.put("latitud", latitude);
                     contentValues.put("longitud", longitude);
                     contentValues.put("hora", String.valueOf(new Date()));
-                    contentValues.put("usuario_id", 1);
+                    contentValues.put("usuario_id", idUser);
                     sqLiteDatabase.insert("medicion", null, contentValues);
                     Toast.makeText(MeasureActivity.this, "Measure saved!", Toast.LENGTH_LONG).show();
                 }else {

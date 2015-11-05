@@ -109,7 +109,7 @@ public class MapsActivity extends FragmentActivity {
         //cursor = sqLiteDatabase.query("medicion",null,null,null,null,null,null);
         cursor = sqLiteDatabase.query("medicion", new String[]{"valor_db", "latitud", "longitud", "hora"}, null, null, null, null, null);
 
-        ArrayList<Medicion> medicions = new ArrayList<>();
+//        ArrayList<Medicion> medicions = new ArrayList<>();
         if (cursor.moveToFirst()) {
             do {
 

@@ -57,7 +57,6 @@ public class UserGet extends AsyncTask<String, String, String> {
 
     @Override
     protected void onPostExecute(String result) {
-
         asyncResponseGet.getUserRest(result);
         Log.i("FromOnPostExecute", result);
         System.out.println(result);

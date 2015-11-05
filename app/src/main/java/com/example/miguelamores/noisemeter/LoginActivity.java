@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.SocketTimeoutException;
+
 import measureRest.UserGet;
 
 
@@ -63,7 +64,7 @@ public class LoginActivity extends Activity {
     private ProgressBarCircularIndeterminate progress;
 
     private UserGet userGet;
-    String  statusCode, id, userName, sqliteEmail, sqlitePassword;
+    String statusCode, id, userName, sqliteEmail, sqlitePassword;
 
     SQLiteDatabase sqLiteDatabase;
 
@@ -78,12 +79,13 @@ public class LoginActivity extends Activity {
         Cursor cursor;
 
         try {
-            cursor = sqLiteDatabase.query("usuario", new String[]{"session", "_id", "nombre", "email"}, null, null, null, null, null);
+            cursor = sqLiteDatabase.query("usuario", new String[]{"session", "_id", "nombre", "email"},
+                    null, null, null, null, null);
 
             if (cursor.moveToFirst()) {
                 do {
-                    boolean sessionBool = cursor.getInt(0)>0;
-                    if (sessionBool){
+                    boolean sessionBool = cursor.getInt(0) > 0;
+                    if (sessionBool) {
 
                         Intent intent = new Intent(LoginActivity.this, MeasureActivity.class);
                         intent.putExtra("id", cursor.getInt(1));
@@ -91,7 +93,7 @@ public class LoginActivity extends Activity {
                         intent.putExtra("mail", cursor.getString(3));
                         startActivity(intent);
                         finish();
-                        System.out.println("Encontrado BOOLEAN "+ cursor.getInt(1));
+                        System.out.println("Encontrado BOOLEAN " + cursor.getInt(1));
                         break;
                     }
 
@@ -104,10 +106,9 @@ public class LoginActivity extends Activity {
         }
 
 
-        if(!isConnected()){
+        if (!isConnected()) {
             SnackBar snackBar = new SnackBar(LoginActivity.this, "You don't have internet connection");
             snackBar.show();
-            //Toast.makeText(getApplicationContext(), "You don't have internet connection", Toast.LENGTH_LONG).show();
         }
 
 
@@ -151,7 +152,6 @@ public class LoginActivity extends Activity {
         btnIngresar.setEnabled(true);
 
 
-
         btnIngresar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -179,7 +179,8 @@ public class LoginActivity extends Activity {
 
                     }
                 });
-                userGet.execute("https://"+url+"/user" + "?mail=" + email.getText().toString() + "&password=" + password.getText().toString());
+                userGet.execute("https://" + url + "/user" + "?mail=" + email.getText().toString() +
+                        "&password=" + password.getText().toString());
 
 
                 // Validate login data
@@ -203,7 +204,8 @@ public class LoginActivity extends Activity {
                             } else {
 
                                 Cursor cursor;
-                                cursor = sqLiteDatabase.query("usuario", new String[]{"_id"}, "_id=?", new String[]{id.toString()}, null, null, null);
+                                cursor = sqLiteDatabase.query("usuario", new String[]{"_id"}, "_id=?",
+                                        new String[]{id.toString()}, null, null, null);
 
 
                                 if (cursor.moveToFirst()) {
@@ -263,7 +265,7 @@ public class LoginActivity extends Activity {
             public void onClick(View view) {
 
                 try {
-                    new HttpAsyncTask().execute("https://"+url+"/user");
+                    new HttpAsyncTask().execute("https://" + url + "/user");
                     signIn.setTextColor(Color.WHITE);
                     signUp.setTextColor(Color.GRAY);
                     name.setVisibility(View.INVISIBLE);
@@ -303,7 +305,7 @@ public class LoginActivity extends Activity {
     }
 
     // Register new user
-    public static String POST(String url, User user){
+    public static String POST(String url, User user) {
         InputStream inputStream = null;
         String result = "";
         int code = 0;
@@ -344,7 +346,7 @@ public class LoginActivity extends Activity {
             // 8. Execute POST request to the given URL
             HttpResponse httpResponse = httpclient.execute(httpPost);
             code = httpResponse.getStatusLine().getStatusCode();
-            if(code == 500){
+            if (code == 500) {
                 throw new Exception();
             }
             System.out.println("Status------------------> " + code);
@@ -352,7 +354,7 @@ public class LoginActivity extends Activity {
             inputStream = httpResponse.getEntity().getContent();
 
             // 10. convert inputstream to string
-            if(inputStream != null)
+            if (inputStream != null)
                 result = convertInputStreamToString(inputStream);
             else
                 result = "Did not work!";
@@ -367,10 +369,10 @@ public class LoginActivity extends Activity {
     }
 
     private static String convertInputStreamToString(InputStream inputStream) throws IOException {
-        BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         String line = "";
         String result = "";
-        while((line = bufferedReader.readLine()) != null)
+        while ((line = bufferedReader.readLine()) != null)
             result += line;
 
         inputStream.close();
@@ -383,14 +385,6 @@ public class LoginActivity extends Activity {
         @Override
         protected String doInBackground(String... urls) {
 
-//            double value;
-//
-//            try {
-//                value = new Double(tex.getText().toString());
-//            } catch (NumberFormatException e) {
-//                value = 0; // your default value
-//            }
-
             User user = new User();
 
             user.setName(name.getText().toString());
@@ -398,18 +392,15 @@ public class LoginActivity extends Activity {
             user.setPassword(password.getText().toString());
 
 
-            return POST(urls[0],user);
+            return POST(urls[0], user);
         }
+
         // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
-            if(result.equals("201")){
+            if (result.equals("201")) {
                 Toast.makeText(getBaseContext(), "Create success", Toast.LENGTH_LONG).show();
-
-//                Intent intent = new Intent(LoginActivity.this, MeasureActivity.class);
-//                startActivity(intent);
-//                finish();
-            }else {
+            } else {
                 Toast.makeText(getBaseContext(), "Failure in create user", Toast.LENGTH_LONG).show();
                 progress.setVisibility(View.INVISIBLE);
             }
@@ -417,7 +408,7 @@ public class LoginActivity extends Activity {
         }
     }
 
-    public boolean isConnected(){
+    public boolean isConnected() {
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(this.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected())
@@ -425,8 +416,6 @@ public class LoginActivity extends Activity {
         else
             return false;
     }
-
-
 
 
 }
