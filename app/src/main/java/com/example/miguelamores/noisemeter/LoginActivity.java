@@ -56,7 +56,7 @@ import measureRest.UserGet;
 
 public class LoginActivity extends Activity {
 
-    private static final String url = "polar-fjord-2695.herokuapp.com";
+    private static final String url = "https://polar-fjord-2695.herokuapp.com";
 
     private ButtonRectangle btnIngresar, register;
     private TextView signIn, signUp;
@@ -64,7 +64,8 @@ public class LoginActivity extends Activity {
     private ProgressBarCircularIndeterminate progress;
 
     private UserGet userGet;
-    String statusCode, id, userName, sqliteEmail, sqlitePassword;
+    String id, userName, sqliteEmail, sqlitePassword;
+    String statusCode = "0";
 
     SQLiteDatabase sqLiteDatabase;
 
@@ -74,36 +75,7 @@ public class LoginActivity extends Activity {
         setContentView(R.layout.activity_login);
 
 
-        final SQLHelper sqlHelper = new SQLHelper(LoginActivity.this);
-        sqLiteDatabase = sqlHelper.getWritableDatabase();
-        Cursor cursor;
-
-        try {
-            cursor = sqLiteDatabase.query("usuario", new String[]{"session", "_id", "nombre", "email"},
-                    null, null, null, null, null);
-
-            if (cursor.moveToFirst()) {
-                do {
-                    boolean sessionBool = cursor.getInt(0) > 0;
-                    if (sessionBool) {
-
-                        Intent intent = new Intent(LoginActivity.this, MeasureActivity.class);
-                        intent.putExtra("id", cursor.getInt(1));
-                        intent.putExtra("name", cursor.getString(2));
-                        intent.putExtra("mail", cursor.getString(3));
-                        startActivity(intent);
-                        finish();
-                        System.out.println("Encontrado BOOLEAN " + cursor.getInt(1));
-                        break;
-                    }
-
-                }
-                while (cursor.moveToNext());
-            }
-            cursor.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        AutologinValidator();
 
 
         if (!isConnected()) {
@@ -175,11 +147,17 @@ public class LoginActivity extends Activity {
                             Toast.makeText(getBaseContext(), "Failure in login. Try again.", Toast.LENGTH_SHORT).show();
                             btnIngresar.setEnabled(true);
                             progress.setEnabled(false);
+                        }finally {
+                            System.out.println("Entro a finally");
+                            if(statusCode.equals("")){
+                                statusCode = "0";
+                                System.out.println("Entro a if");
+                            }
                         }
 
                     }
                 });
-                userGet.execute("https://" + url + "/user" + "?mail=" + email.getText().toString() +
+                userGet.execute(url + "/user" + "?mail=" + email.getText().toString() +
                         "&password=" + password.getText().toString());
 
 
@@ -188,9 +166,8 @@ public class LoginActivity extends Activity {
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-
-
-                        if (statusCode.equals("0")) {
+                        System.out.println("Respuesta---- " + statusCode);
+                        if (statusCode.equals("0") || statusCode == null) {
                             try {
                                 throw new SocketTimeoutException();
                             } catch (SocketTimeoutException e) {
@@ -254,8 +231,9 @@ public class LoginActivity extends Activity {
                                 }
                             }
                         }
+
                     }
-                }, 3500);
+                }, 4500);
 
             }
         });
@@ -265,7 +243,7 @@ public class LoginActivity extends Activity {
             public void onClick(View view) {
 
                 try {
-                    new HttpAsyncTask().execute("https://" + url + "/user");
+                    new HttpAsyncTask().execute(url + "/user");
                     signIn.setTextColor(Color.WHITE);
                     signUp.setTextColor(Color.GRAY);
                     name.setVisibility(View.INVISIBLE);
@@ -281,6 +259,41 @@ public class LoginActivity extends Activity {
 
 
     }
+
+    private void AutologinValidator() {
+        final SQLHelper sqlHelper = new SQLHelper(LoginActivity.this);
+        sqLiteDatabase = sqlHelper.getWritableDatabase();
+        Cursor cursor;
+
+        try {
+            cursor = sqLiteDatabase.query("usuario", new String[]{"session", "_id", "nombre", "email"},
+                    null, null, null, null, null);
+
+            if (cursor.moveToFirst()) {
+                do {
+                    boolean sessionBool = cursor.getInt(0) > 0;
+                    if (sessionBool) {
+
+                        Intent intent = new Intent(LoginActivity.this, MeasureActivity.class);
+                        intent.putExtra("id", cursor.getInt(1));
+                        intent.putExtra("name", cursor.getString(2));
+                        intent.putExtra("mail", cursor.getString(3));
+                        startActivity(intent);
+                        finish();
+                        System.out.println("Encontrado BOOLEAN " + cursor.getInt(1));
+                        break;
+                    }
+
+                }
+                while (cursor.moveToNext());
+            }
+            cursor.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

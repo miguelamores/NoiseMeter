@@ -7,6 +7,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.media.MediaRecorder;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import android.os.Handler;
 import android.widget.Toast;
@@ -43,7 +47,7 @@ import measureRest.MeasureGet;
 
 public class MeasureActivity extends Activity{
 
-    private static final String url = "polar-fjord-2695.herokuapp.com";
+    private static final String url = "https://polar-fjord-2695.herokuapp.com";
 
     private MediaRecorder mRecorder = null;
     double powerDb = 0;
@@ -55,8 +59,6 @@ public class MeasureActivity extends Activity{
     Handler handler = new Handler();
     Runnable runnable;
     private SpeedometerGauge speedometer;
-    private double mEMA = 0.0;
-    static final private double EMA_FILTER = 0.6;
     SQLiteDatabase sqLiteDatabase;
     double latitude;
     double longitude;
@@ -92,6 +94,7 @@ public class MeasureActivity extends Activity{
         idUser = getIntent().getIntExtra("id", 0);
         welcome.setText("Welcome " + name);
         welcome.setTextColor(Color.WHITE);
+
 
         //Obtener mediciones
 //        measureGet = new MeasureGet(new AsyncResponseMeasure() {
@@ -138,6 +141,11 @@ public class MeasureActivity extends Activity{
         speedometer.addColoredRange(40, 80, Color.YELLOW);
         speedometer.addColoredRange(80, 120, Color.RED);
 
+        if(isConnected()){
+            sincronizar();
+        }
+
+
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -156,13 +164,17 @@ public class MeasureActivity extends Activity{
                             "Your location is -\nLat: " + latitude + "\nLong: "
                                     + longitude, Toast.LENGTH_LONG).show();
 
+                    if (latitude != 0 && longitude != 0){
+                        try {
+                            start();
+                            handler.removeCallbacks(runnable);
+                            handler.postDelayed(runnable, 0);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
 
-                    try {
-                        start();
-                        handler.removeCallbacks(runnable);
-                        handler.postDelayed(runnable, 0);
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    }else {
+                        btnParar.setEnabled(false);
                     }
 
                 } else {
@@ -189,16 +201,24 @@ public class MeasureActivity extends Activity{
             public void onClick(View v) {
                 stop();
                 btnSave.setEnabled(true);
+                gps.stopUsingGPS();
             }
         });
+
 
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 if(latitude != 0 && longitude != 0){
+                    Medicion medicion = new Medicion();
 
-                    new HttpAsyncTask().execute("https://"+url+"/measure");
+                    medicion.setValor_db(powerDb);
+                    medicion.setLongitud(longitude);
+                    medicion.setLatitud(latitude);
+                    medicion.setUsuario_id(idUser);
+
+                    new HttpAsyncTask(medicion).execute(url+"/measure");
 
                     ContentValues contentValues = new ContentValues();
                     contentValues.put("valor_db", powerDb);
@@ -206,10 +226,15 @@ public class MeasureActivity extends Activity{
                     contentValues.put("longitud", longitude);
                     contentValues.put("hora", String.valueOf(new Date()));
                     contentValues.put("usuario_id", idUser);
+                    if (isConnected()) {
+                        contentValues.put("db_externa", Boolean.TRUE);
+                    }else {
+                        contentValues.put("db_externa", Boolean.FALSE);
+                    }
                     sqLiteDatabase.insert("medicion", null, contentValues);
                     Toast.makeText(MeasureActivity.this, "Measure saved!", Toast.LENGTH_LONG).show();
                 }else {
-                    SnackBar snackBar = new SnackBar(MeasureActivity.this, "GPS is disabled!");
+                    SnackBar snackBar = new SnackBar(MeasureActivity.this, "Push PLAY button again!");
                     snackBar.show();
                 }
 
@@ -254,10 +279,20 @@ public class MeasureActivity extends Activity{
 
         if (id == R.id.action_map) {
             Intent intent = new Intent(MeasureActivity.this, MapsActivity.class);
+            intent.putExtra("id", idUser);
             startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public boolean isConnected() {
+        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(this.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected())
+            return true;
+        else
+            return false;
     }
 
 
@@ -293,6 +328,49 @@ public class MeasureActivity extends Activity{
             mRecorder.release();
             mRecorder = null;
         }
+    }
+
+    public void sincronizar(){
+        String status = null;
+        final Cursor cursor;
+        cursor = sqLiteDatabase.rawQuery("select valor_db, latitud, longitud, db_externa, medicion_id, usuario_id from medicion",null);
+
+        final Medicion medicion = new Medicion();
+
+            if (cursor.moveToFirst()) {
+
+                do {
+                    boolean db_externa = cursor.getInt(3) > 0;
+                    if (db_externa == Boolean.FALSE) {
+                        medicion.setValor_db(cursor.getDouble(0));
+                        medicion.setLatitud(cursor.getDouble(1));
+                        medicion.setLongitud(cursor.getDouble(2));
+                        medicion.setUsuario_id(cursor.getInt(5));
+                        try {
+                            status = new HttpAsyncTask(medicion).execute(url + "/measure").get();
+
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        }
+                        Toast.makeText(MeasureActivity.this, "Sincronizando...", Toast.LENGTH_SHORT).show();
+                        if ("201".equals(status)){
+                            ContentValues contentValues = new ContentValues();
+                            contentValues.put("db_externa", true);
+                            sqLiteDatabase.update("medicion", contentValues, "medicion_id=" + cursor.getInt(4), null);
+                            Log.i("Login", "User updated to true");
+                        }
+                    }
+
+                }
+                while (cursor.moveToNext());
+
+            }
+
+
+        cursor.close();
+
     }
 
 
@@ -373,7 +451,11 @@ public class MeasureActivity extends Activity{
 
     private class HttpAsyncTask extends AsyncTask<String, Void, String> {
 
+        private Medicion medicion;
 
+        private HttpAsyncTask(Medicion medicion) {
+            this.medicion = medicion;
+        }
 
         @Override
         protected String doInBackground(String... urls) {
@@ -386,12 +468,12 @@ public class MeasureActivity extends Activity{
 //                value = 0; // your default value
 //            }
 
-            Medicion medicion = new Medicion();
-
-            medicion.setValor_db(powerDb);
-            medicion.setLongitud(longitude);
-            medicion.setLatitud(latitude);
-            medicion.setUsuario_id(idUser);
+//            Medicion medicion = new Medicion();
+//
+//            medicion.setValor_db(powerDb);
+//            medicion.setLongitud(longitude);
+//            medicion.setLatitud(latitude);
+//            medicion.setUsuario_id(idUser);
 
             return POST(urls[0],medicion);
         }

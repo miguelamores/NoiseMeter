@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class SQLHelper extends SQLiteOpenHelper {
 
     final private static String DBName = "NoiseMeterTable";
-    final private static int DBVersion = 1;
+    final private static int DBVersion = 2;
 
     final private static String _ID = "_id";
     final private static String NOMBRE_USUARIO = "nombre";
@@ -24,6 +24,7 @@ public class SQLHelper extends SQLiteOpenHelper {
     final private static String LONGITUD = "longitud";
     final private static String HORA = "hora";
     final private static String USUARIOID = "usuario_id";
+    final private static String EXTERNALDB = "db_externa";
 
     public static String TABLA_USUARIO = "CREATE TABLE usuario(" +
             _ID + " INTEGER PRIMARY KEY," +
@@ -37,7 +38,9 @@ public class SQLHelper extends SQLiteOpenHelper {
             VALORDB + " double, " +
             LATITUD + " double, " +
             LONGITUD + " double," +
-            HORA + " Date," + USUARIOID + " integer, FOREIGN KEY(" + USUARIOID + ") REFERENCES usuario(" + _ID + "))";
+            HORA + " Date," +
+            EXTERNALDB + "boolean," +
+            USUARIOID + " integer, FOREIGN KEY(" + USUARIOID + ") REFERENCES usuario(" + _ID + "))";
 
     public SQLHelper(Context context) {
         super(context, DBName, null, DBVersion);
@@ -51,6 +54,11 @@ public class SQLHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        db.execSQL("ALTER TABLE medicion ADD COLUMN db_externa boolean");
+//        if (newVersion > oldVersion) {
+//            System.out.println("CAMBIO DB----------------");
+//            db.execSQL("DROP TABLE IF EXISTS medicion");
+//            onCreate(db);
+//        }
     }
 }

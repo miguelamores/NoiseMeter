@@ -37,8 +37,8 @@ public class UserGet extends AsyncTask<String, String, String> {
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             statusCode = urlConnection.getResponseCode();
             InputStream inputStream = urlConnection.getInputStream();
-            urlConnection.setConnectTimeout(5000);
-            urlConnection.setReadTimeout(5000);
+            urlConnection.setConnectTimeout(4300);
+            //urlConnection.setReadTimeout(4300);
 
             if (statusCode != 200){
                 throw new Exception();

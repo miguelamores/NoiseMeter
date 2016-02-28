@@ -8,9 +8,13 @@ import android.os.Bundle;
 
 import com.example.miguelamores.data.Medicion;
 import com.example.miguelamores.data.SQLHelper;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.TileOverlay;
@@ -30,11 +34,15 @@ public class MapsActivity extends FragmentActivity {
     SQLiteDatabase sqLiteDatabase;
     Medicion medicion;
     HeatmapTileProvider heatMap;
+    int idUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        Bundle extras = getIntent().getExtras();
+        idUser = getIntent().getIntExtra("id", 0);
 
         setUpMapIfNeeded();
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-0.180653, -78.467834), 6));
@@ -69,6 +77,7 @@ public class MapsActivity extends FragmentActivity {
             // Try to obtain the map from the SupportMapFragment.
             mMap = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
                     .getMap();
+            MapsInitializer.initialize(this);
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
                 setUpMap();
@@ -95,46 +104,44 @@ public class MapsActivity extends FragmentActivity {
 
         // Create the gradient.
         int[] colors = {
-                Color.rgb(102, 225, 0), // green
+                Color.rgb(0, 225, 0), // green
+                Color.rgb(255, 255, 0),
                 Color.rgb(255, 0, 0)    // red
         };
 
         float[] startPoints = {
-                0.2f, 1f
+                0.1f, 0.6f, 0.8f
+                //0.1f, 0.3f, 1f
+                //0.1f, 0.7f, 0.8f
         };
 
         Gradient gradient = new Gradient(colors, startPoints);
+        CircleOptions circleOptions = null;
+        cursor = sqLiteDatabase.query("medicion", new String[]{"valor_db", "latitud", "longitud", "hora"}, "usuario_id=?", new String[]{String.valueOf(idUser)}, null, null, null);
 
-
-        //cursor = sqLiteDatabase.query("medicion",null,null,null,null,null,null);
-        cursor = sqLiteDatabase.query("medicion", new String[]{"valor_db", "latitud", "longitud", "hora"}, null, null, null, null, null);
-
-//        ArrayList<Medicion> medicions = new ArrayList<>();
         if (cursor.moveToFirst()) {
             do {
 
-                latLng = new LatLng(cursor.getDouble(1), cursor.getDouble(2));
-                weightedLatLng = new WeightedLatLng(latLng, cursor.getDouble(0));
-                //latLng = new LatLng(-0.180653, -78.467834);
-                //list.add(latLng);
-                list.add(weightedLatLng);
 
-//                medicion = new Medicion();
-//                medicion.setValor_db(cursor.getInt(0));
-//                medicion.setLatitud(cursor.getDouble(1));
-//                medicion.setLongitud(cursor.getDouble(2));
-//                medicions.add(0, medicion);
-//                mMap.addMarker(new MarkerOptions().position(latLng).title(String.valueOf(medicion.getValor_db())+" dB"));
+                latLng = new LatLng(cursor.getDouble(1), cursor.getDouble(2));
+                //circleOptions = new CircleOptions().center(latLng).radius(cursor.getDouble(0));
+
+                weightedLatLng = new WeightedLatLng(latLng, cursor.getDouble(0));
+                list.add(weightedLatLng);
                 mMap.addMarker(new MarkerOptions().position(latLng).title(String.valueOf(String.format("%.2f", cursor.getDouble(0))) +
-                        " dB"));
+                        " dB").snippet(cursor.getString(3)).alpha(0.5f));
             }
             while (cursor.moveToNext());
         }
         cursor.close();
 
-        //heatMap = new HeatmapTileProvider.Builder().data(list).build();
-        heatMap = new HeatmapTileProvider.Builder().weightedData(list).gradient(gradient).build();
-        TileOverlay mOveray = mMap.addTileOverlay(new TileOverlayOptions().tileProvider(heatMap));
+        if(!list.isEmpty()){
+            heatMap = new HeatmapTileProvider.Builder().weightedData(list).gradient(gradient).build();
+            TileOverlay mOveray = mMap.addTileOverlay(new TileOverlayOptions().tileProvider(heatMap));
+            //Circle mOveray = mMap.addCircle(circleOptions);
+            //heatMap.setRadius(40);
+        }
+
     }
 
 
