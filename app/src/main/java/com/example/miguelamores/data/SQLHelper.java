@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class SQLHelper extends SQLiteOpenHelper {
 
     final private static String DBName = "NoiseMeterTable";
-    final private static int DBVersion = 2;
+    final private static int DBVersion = 3;
 
     final private static String _ID = "_id";
     final private static String NOMBRE_USUARIO = "nombre";
@@ -54,7 +54,9 @@ public class SQLHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+
         db.execSQL("ALTER TABLE medicion ADD COLUMN db_externa boolean");
+        System.out.println("CAMBIO DB----------------");
 //        if (newVersion > oldVersion) {
 //            System.out.println("CAMBIO DB----------------");
 //            db.execSQL("DROP TABLE IF EXISTS medicion");

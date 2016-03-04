@@ -149,7 +149,7 @@ public class LoginActivity extends Activity {
                             progress.setEnabled(false);
                         }finally {
                             System.out.println("Entro a finally");
-                            if(statusCode.equals("")){
+                            if("".equals(statusCode)){
                                 statusCode = "0";
                                 System.out.println("Entro a if");
                             }
@@ -167,7 +167,7 @@ public class LoginActivity extends Activity {
                     @Override
                     public void run() {
                         System.out.println("Respuesta---- " + statusCode);
-                        if (statusCode.equals("0") || statusCode == null) {
+                        if ("0".equals(statusCode) || statusCode == null) {
                             try {
                                 throw new SocketTimeoutException();
                             } catch (SocketTimeoutException e) {
@@ -176,7 +176,7 @@ public class LoginActivity extends Activity {
                             }
                         } else {
 
-                            if (statusCode.equals("404") || statusCode.equals("500")) {
+                            if ("404".equals(statusCode) || "500".equals(statusCode)) {
                                 Toast.makeText(getApplicationContext(), "Email or password are incorrect.", Toast.LENGTH_LONG).show();
                             } else {
 
