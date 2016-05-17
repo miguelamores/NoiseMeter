@@ -55,7 +55,7 @@ public class SQLHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-        db.execSQL("ALTER TABLE medicion ADD COLUMN db_externa boolean");
+        //db.execSQL("ALTER TABLE medicion ADD COLUMN db_externa boolean");
         System.out.println("CAMBIO DB----------------");
 //        if (newVersion > oldVersion) {
 //            System.out.println("CAMBIO DB----------------");

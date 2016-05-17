@@ -217,6 +217,7 @@ public class MeasureActivity extends Activity{
                     medicion.setLongitud(longitude);
                     medicion.setLatitud(latitude);
                     medicion.setUsuario_id(idUser);
+                    medicion.setTipo_medicion("app");
 
                     new HttpAsyncTask(medicion).execute(url+"/measure");
 
@@ -394,6 +395,7 @@ public class MeasureActivity extends Activity{
             jsonObject.accumulate("latitude", medicion.getLatitud());
             jsonObject.accumulate("longitude", medicion.getLongitud());
             jsonObject.accumulate("user_id", medicion.getUsuario_id());
+            jsonObject.accumulate("measure_type", medicion.getTipo_medicion());
 
             // 4. convert JSONObject to JSON to String
             json = jsonObject.toString();

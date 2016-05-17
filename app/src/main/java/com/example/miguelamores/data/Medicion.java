@@ -12,6 +12,15 @@ public class Medicion {
     private double longitud;
     private Date hora;
     private int usuario_id;
+    private String tipo_medicion;
+
+    public String getTipo_medicion() {
+        return tipo_medicion;
+    }
+
+    public void setTipo_medicion(String tipo_medicion) {
+        this.tipo_medicion = tipo_medicion;
+    }
 
     public int getMedicion_id() {
         return medicion_id;

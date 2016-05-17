@@ -45,9 +45,10 @@ public class MapsActivity extends FragmentActivity {
         idUser = getIntent().getIntExtra("id", 0);
 
         setUpMapIfNeeded();
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-0.180653, -78.467834), 6));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(-0.180653, -78.467834), 14));
         mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
         //mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+
     }
 
     @Override
@@ -124,10 +125,31 @@ public class MapsActivity extends FragmentActivity {
 
 
                 latLng = new LatLng(cursor.getDouble(1), cursor.getDouble(2));
-                //circleOptions = new CircleOptions().center(latLng).radius(cursor.getDouble(0));
+//                circleOptions = new CircleOptions().center(latLng).radius(cursor.getDouble(0)/4);
+//                if(cursor.getDouble(0) >= 80){
+//                    circleOptions.fillColor(Color.parseColor("#FD1001")).strokeColor(Color.parseColor("#ff3333"));
+//                }
+//                if(cursor.getDouble(0) > 70 && cursor.getDouble(0) <= 79.9){
+//                    circleOptions.fillColor(Color.parseColor("#F27D0B")).strokeColor(Color.parseColor("#ff6666"));
+//                }
+//                if(cursor.getDouble(0) > 60 && cursor.getDouble(0) <= 69.9){
+//                    circleOptions.fillColor(Color.parseColor("#FEC324")).strokeColor(Color.parseColor("#ff9999"));
+//                }
+//                if(cursor.getDouble(0) > 50 && cursor.getDouble(0) <= 59.9){
+//                    circleOptions.fillColor(Color.parseColor("#A6B80F")).strokeColor(Color.parseColor("#bbff33"));
+//                }
+//                if(cursor.getDouble(0) > 40 && cursor.getDouble(0) <= 49.9){
+//                    circleOptions.fillColor(Color.parseColor("#1F5B19")).strokeColor(Color.parseColor("#66ff66"));
+//                }
+//                if(cursor.getDouble(0) <= 39.9){
+//                    circleOptions.fillColor(Color.parseColor("#377430")).strokeColor(Color.parseColor("#b3ffb3"));
+//                }
+//
+//                Circle circle = mMap.addCircle(circleOptions);
 
                 weightedLatLng = new WeightedLatLng(latLng, cursor.getDouble(0));
                 list.add(weightedLatLng);
+
                 mMap.addMarker(new MarkerOptions().position(latLng).title(String.valueOf(String.format("%.2f", cursor.getDouble(0))) +
                         " dB").snippet(cursor.getString(3)).alpha(0.5f));
             }
@@ -138,8 +160,8 @@ public class MapsActivity extends FragmentActivity {
         if(!list.isEmpty()){
             heatMap = new HeatmapTileProvider.Builder().weightedData(list).gradient(gradient).build();
             TileOverlay mOveray = mMap.addTileOverlay(new TileOverlayOptions().tileProvider(heatMap));
-            //Circle mOveray = mMap.addCircle(circleOptions);
-            //heatMap.setRadius(40);
+//            Circle circle = mMap.addCircle(circleOptions);
+            heatMap.setRadius(40);
         }
 
     }
